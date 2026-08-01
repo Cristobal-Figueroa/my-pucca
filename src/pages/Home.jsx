@@ -10,7 +10,7 @@ import {
   calculateNextPeriod,
   calculateOvulationDate
 } from '../utils/cycleCalculations';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Layout from '../components/Layout';
 
@@ -132,11 +132,10 @@ const Home = () => {
                 const fertileStart = ovulationDay - 5;
                 const fertileEnd = ovulationDay + 1;
                 
-                // Calcular proporciones reales según configuración (coincidiendo con getCyclePhase)
+                // Calcular proporciones reales según duración correcta de fases
                 const menstruationPercent = periodLength / profile.cycleLength;
-                const fertileWindowDays = fertileEnd - fertileStart; // 6 días de ventana fértil
-                const ovulationPercent = fertileWindowDays / profile.cycleLength; // ventana fértil completa
-                const lutealPercent = 14 / profile.cycleLength; // ~14 días fase lútea (después de ovulación)
+                const ovulationPercent = 1 / profile.cycleLength; // 1 día de ovulación
+                const lutealPercent = 14 / profile.cycleLength; // 14 días fase lútea (después de ovulación)
                 const follicularPercent = 1 - menstruationPercent - ovulationPercent - lutealPercent;
                 
                 const menstruationLength = circumference * menstruationPercent;
@@ -154,11 +153,11 @@ const Home = () => {
                 const outerRadius = 44; // borde externo del círculo de colores (líneas más cortas)
                 const textRadius = 38; // radio para los números (entre líneas)
                 
-                // Calcular día actual usando la misma lógica que cycleCalculations.js
+                // Calcular día actual usando differenceInDays (igual que getCyclePhase en cycleCalculations.js)
                 const today = new Date();
                 const lastPeriodStart = new Date(profile.lastPeriodStart);
-                const daysSinceLastPeriod = Math.floor((today - lastPeriodStart) / (1000 * 60 * 60 * 24));
-                const zeroIndexedDay = daysSinceLastPeriod % profile.cycleLength; // 0-indexed (0-27)
+                const daysSinceLastPeriod = differenceInDays(today, lastPeriodStart);
+                const zeroIndexedDay = ((daysSinceLastPeriod % profile.cycleLength) + profile.cycleLength) % profile.cycleLength; // 0-indexed (0-27)
                 const currentDay = zeroIndexedDay + 1; // 1-indexed (1-28)
                 
                 // Calcular el segmento del día actual
@@ -253,13 +252,14 @@ const Home = () => {
                       // Determinar si es el día actual (dayIndex es 0-indexed, zeroIndexedDay es 0-indexed)
                       const isCurrentDay = dayIndex === zeroIndexedDay;
                       
-                      // Color del número según fase
+                      // Color del número según fase (ovulación es 1 solo día: cycleLength - 14)
+                      const ovulationDayIndex = profile.cycleLength - 14;
                       let numberColor = '#ffffff';
                       if (dayIndex < periodLength) {
                         numberColor = '#fff1f2';
-                      } else if (dayIndex < (profile.cycleLength - 16)) {
+                      } else if (dayIndex < ovulationDayIndex) {
                         numberColor = '#f0fdf4';
-                      } else if (dayIndex >= (profile.cycleLength - 16) && dayIndex < (profile.cycleLength - 14)) {
+                      } else if (dayIndex === ovulationDayIndex) {
                         numberColor = '#faf5ff';
                       } else {
                         numberColor = '#fefce8';
@@ -314,8 +314,9 @@ const Home = () => {
                   Día {(() => {
                     const today = new Date();
                     const lastPeriodStart = new Date(profile.lastPeriodStart);
-                    const daysSinceLastPeriod = Math.floor((today - lastPeriodStart) / (1000 * 60 * 60 * 24));
-                    return (daysSinceLastPeriod % profile.cycleLength) + 1;
+                    const daysSinceLastPeriod = differenceInDays(today, lastPeriodStart);
+                    const zeroIndexed = ((daysSinceLastPeriod % profile.cycleLength) + profile.cycleLength) % profile.cycleLength;
+                    return zeroIndexed + 1;
                   })()} de {profile.cycleLength}
                 </p>
               </div>
@@ -330,11 +331,11 @@ const Home = () => {
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-              <span className="text-sm text-gray-700">Folicular ({profile.cycleLength - profile.periodLength - 16}d)</span>
+              <span className="text-sm text-gray-700">Folicular ({profile.cycleLength - profile.periodLength - 14}d)</span>
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-              <span className="text-sm text-gray-700">Ovulación (2d)</span>
+              <span className="text-sm text-gray-700">Ovulación (1d)</span>
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>

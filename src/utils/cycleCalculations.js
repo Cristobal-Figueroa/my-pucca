@@ -27,43 +27,19 @@ export const calculateNextPeriod = (lastPeriodStart, cycleLength) => {
 };
 
 // Determinar en qué fase del ciclo está una fecha específica
+// Nota: la ovulación se considera un único día (cycleLength - 14),
+// la fase lútea dura 14 días después de la ovulación, y la fase folicular
+// ocupa el resto de días entre el fin de la menstruación y el día de ovulación.
 export const getCyclePhase = (date, lastPeriodStart, cycleLength, periodLength) => {
   const daysSinceLastPeriod = differenceInDays(date, lastPeriodStart);
-  const ovulationDate = calculateOvulationDate(lastPeriodStart, cycleLength);
-  const fertileWindow = calculateFertileWindow(ovulationDate);
-  const nextPeriod = calculateNextPeriod(lastPeriodStart, cycleLength);
+  const daysIntoCycle = ((daysSinceLastPeriod % cycleLength) + cycleLength) % cycleLength;
+  const ovulationDayIndex = cycleLength - 14; // 0-indexed: día de ovulación (1 día de duración)
 
-  // Fase menstrual (días 1-5 del ciclo, o según duración del periodo)
-  if (daysSinceLastPeriod >= 0 && daysSinceLastPeriod < periodLength) {
-    return CYCLE_PHASES.MENSTRUATION;
-  }
-
-  // Ventana fértil y ovulación
-  if (isSameDay(date, ovulationDate)) {
-    return CYCLE_PHASES.OVULATION;
-  }
-
-  if ((isAfter(date, fertileWindow.start) || isSameDay(date, fertileWindow.start)) &&
-      (isBefore(date, fertileWindow.end) || isSameDay(date, fertileWindow.end))) {
-    return CYCLE_PHASES.OVULATION;
-  }
-
-  // Fase folicular (después del periodo hasta antes de la ovulación)
-  if (daysSinceLastPeriod >= periodLength && daysSinceLastPeriod < (cycleLength - 14)) {
-    return CYCLE_PHASES.FOLLICULAR;
-  }
-
-  // Fase lútea (después de la ovulación hasta el próximo periodo)
-  if (daysSinceLastPeriod >= (cycleLength - 14) && daysSinceLastPeriod < cycleLength) {
-    return CYCLE_PHASES.LUTEAL;
-  }
-
-  // Si está más allá del ciclo actual, calcular fase relativa al próximo ciclo
-  const daysIntoCycle = daysSinceLastPeriod % cycleLength;
-  
   if (daysIntoCycle < periodLength) {
     return CYCLE_PHASES.MENSTRUATION;
-  } else if (daysIntoCycle < (cycleLength - 14)) {
+  } else if (daysIntoCycle === ovulationDayIndex) {
+    return CYCLE_PHASES.OVULATION;
+  } else if (daysIntoCycle < ovulationDayIndex) {
     return CYCLE_PHASES.FOLLICULAR;
   } else {
     return CYCLE_PHASES.LUTEAL;
