@@ -83,10 +83,11 @@ const Symptoms = () => {
   ];
 
   const skinOptions = [
-    { value: 'clear', label: 'Limpia ✨', color: 'bg-green-100 text-green-800' },
-    { value: 'minor', label: 'Leve 🌱', color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'moderate', label: 'Moderada 🌿', color: 'bg-orange-100 text-orange-800' },
-    { value: 'severe', label: 'Severa 🍂', color: 'bg-red-100 text-red-800' },
+    { value: 'normal', label: 'Normal ✨', color: 'bg-green-100 text-green-800' },
+    { value: 'dry', label: 'Seca �', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'oily', label: 'Grasosa 🧴', color: 'bg-orange-100 text-orange-800' },
+    { value: 'sensitive', label: 'Sensible 🥺', color: 'bg-red-100 text-red-800' },
+    { value: 'acne', label: 'Con acné 🧴', color: 'bg-purple-100 text-purple-800' },
   ];
 
   const digestionOptions = [

@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
 
-const Header = ({ title, showBackButton = false, showSettings = true }) => {
+const Header = ({ title, showBackButton = false, showSettings = true, showTips = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [profile, setProfile] = useState(null);
@@ -14,6 +14,9 @@ const Header = ({ title, showBackButton = false, showSettings = true }) => {
     const savedProfile = getProfile();
     setProfile(savedProfile);
   }, []);
+
+  // Ocultar consejos si el usuario es hombre
+  const shouldShowTips = showTips && profile?.gender !== 'man';
 
   const handleBack = () => {
     navigate('/');
@@ -58,12 +61,14 @@ const Header = ({ title, showBackButton = false, showSettings = true }) => {
           )}
 
           <div className="flex items-center space-x-2">
-            <button
-              onClick={handleTips}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <Lightbulb className="text-amber-500" size={24} />
-            </button>
+            {shouldShowTips && (
+              <button
+                onClick={handleTips}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <Lightbulb className="text-amber-500" size={24} />
+              </button>
+            )}
             {showSettings && (
               <button
                 onClick={handleSettings}
