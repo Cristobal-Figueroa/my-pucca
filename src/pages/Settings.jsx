@@ -141,6 +141,7 @@ const Settings = () => {
             onChange={(e) => setProfile({ ...profile, lastPeriodStart: e.target.value })}
             onClick={(e) => e.target.showPicker?.()}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent cursor-pointer"
+            max={new Date().toISOString().split('T')[0]}
           />
         </div>
 

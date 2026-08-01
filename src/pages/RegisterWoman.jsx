@@ -13,6 +13,18 @@ const RegisterWoman = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
+  // Generar código de pareja
+  const generatePartnerCode = (name, userId) => {
+    const base = name.replace(/\s/g, '').toLowerCase() + userId;
+    let hash = 0;
+    for (let i = 0; i < base.length; i++) {
+      const char = base.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(16).toUpperCase().padStart(6, '0').slice(0, 6);
+  };
+
   const handleSubmit = async () => {
     if (!name.trim()) {
       setModalMessage('Por favor ingresa tu nombre');
@@ -26,13 +38,17 @@ const RegisterWoman = () => {
       return;
     }
 
+    const userId = 'user_' + Date.now();
+    const partnerCode = generatePartnerCode(name.trim(), userId);
+
     const profile = {
-      user_id: 'user_' + Date.now(),
+      user_id: userId,
       name: name.trim(),
       cycleLength,
       periodLength,
       lastPeriodStart,
-      gender: 'woman'
+      gender: 'woman',
+      partnerCode
     };
 
     const saved = await saveProfile(profile);

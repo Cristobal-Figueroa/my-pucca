@@ -151,9 +151,10 @@ const ManSymptoms = () => {
             <input
               type="date"
               value={format(selectedDate, 'yyyy-MM-dd')}
-              onChange={(e) => setSelectedDate(new Date(e.target.value))}
+              onChange={(e) => setSelectedDate(new Date(e.target.value + 'T00:00:00'))}
               onClick={(e) => e.target.showPicker?.()}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+              max={new Date().toISOString().split('T')[0]}
             />
           </div>
           <p className="text-sm text-gray-600 mt-2">

@@ -57,9 +57,15 @@ const Calendar = () => {
 
   const handleAddPeriod = async () => {
     if (selectedDate) {
+      // Usar fecha local en lugar de UTC para evitar problemas de zona horaria
+      const year = selectedDate.date.getFullYear();
+      const month = String(selectedDate.date.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.date.getDate()).padStart(2, '0');
+      const localDate = `${year}-${month}-${day}`;
+      
       const newPeriod = {
         id: Date.now().toString(),
-        date: selectedDate.date.toISOString().split('T')[0],
+        date: localDate,
         notes: ''
       };
       
@@ -68,7 +74,7 @@ const Calendar = () => {
       // Actualizar el perfil con la nueva fecha de inicio
       const updatedProfile = {
         ...profile,
-        lastPeriodStart: newPeriod.date
+        lastPeriodStart: localDate
       };
       setProfile(updatedProfile);
       await saveProfile(updatedProfile); // Guardar en storage para que actualice toda la app

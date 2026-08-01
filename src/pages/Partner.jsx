@@ -103,8 +103,16 @@ const Partner = () => {
     setSyncMessage('');
     
     try {
+      // Generar partner_code si la mujer no tiene uno
+      let profileToSync = { ...profile };
+      if (profile.gender === 'woman' && !profile.partnerCode) {
+        const partnerCode = generateSyncCode(profile.name, profile.lastPeriodStart);
+        profileToSync = { ...profile, partnerCode };
+        setProfile(profileToSync);
+      }
+      
       // Sincronizar perfil
-      const profileSaved = await saveProfile(profile);
+      const profileSaved = await saveProfile(profileToSync);
       
       if (!profileSaved) {
         setSyncMessage('Error al guardar el perfil. Intenta nuevamente.');
