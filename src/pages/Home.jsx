@@ -24,6 +24,10 @@ const Home = () => {
   useEffect(() => {
     const savedProfile = getProfile();
     if (savedProfile) {
+      if (savedProfile.gender === 'man') {
+        navigate('/man-home');
+        return;
+      }
       setProfile(savedProfile);
       
       const today = new Date();

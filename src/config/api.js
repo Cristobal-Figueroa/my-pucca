@@ -1,29 +1,23 @@
 // Configuración centralizada de API
-// Para conectar con backend, cambiar esta URL según sea necesario
-export const API_BASE_URL = 'http://localhost:8000';
+// URL del backend
+export const API_BASE_URL = 'https://al.codeclandresell.com/backend';
 
 // Endpoints de la API
 export const API_ENDPOINTS = {
   // Perfil
-  GET_PROFILE: '/api/profile',
-  UPDATE_PROFILE: '/api/profile',
+  SAVE_PROFILE: '/save_profile.php',
+  GET_PROFILE: '/get_profile.php',
   
-  // Ciclo menstrual
-  GET_CYCLE: '/api/cycle',
-  UPDATE_CYCLE: '/api/cycle',
-  GET_PERIODS: '/api/periods',
-  ADD_PERIOD: '/api/periods',
-  UPDATE_PERIOD: '/api/periods',
-  DELETE_PERIOD: '/api/periods',
+  // Periodos
+  SAVE_PERIOD: '/save_period.php',
+  GET_PERIODS: '/get_periods.php',
   
   // Síntomas
-  GET_SYMPTOMS: '/api/symptoms',
-  ADD_SYMPTOM: '/api/symptoms',
-  UPDATE_SYMPTOM: '/api/symptoms',
-  DELETE_SYMPTOM: '/api/symptoms',
+  SAVE_SYMPTOM: '/save_symptom.php',
+  GET_SYMPTOMS: '/get_symptoms.php',
   
-  // Predicciones
-  GET_PREDICTIONS: '/api/predictions',
+  // Sincronización de pareja
+  PARTNER_SYNC: '/partner_sync.php',
 };
 
 // Función helper para hacer peticiones a la API

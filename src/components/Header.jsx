@@ -40,7 +40,8 @@ const Header = ({ title, showBackButton = false, showSettings = true }) => {
               <span className="text-sm">Volver</span>
             </button>
           ) : (
-            <div>
+            <div className="flex items-center">
+              <img src="/logo.jpg" alt="Mi Pucca" className="w-8 h-8 rounded-full mr-2 object-cover" />
               {profile ? (
                 <>
                   <h1 className="text-xl font-bold text-gray-900">
@@ -51,7 +52,7 @@ const Header = ({ title, showBackButton = false, showSettings = true }) => {
                   </p>
                 </>
               ) : (
-                <h1 className="text-xl font-bold text-gray-900">Mi Pucca 💕</h1>
+                <h1 className="text-xl font-bold text-gray-900">Mi Pucca</h1>
               )}
             </div>
           )}

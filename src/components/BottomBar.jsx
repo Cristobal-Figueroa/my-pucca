@@ -6,7 +6,7 @@ const BottomBar = () => {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', icon: Home, label: 'Inicio' },
+    { path: '/home', icon: Home, label: 'Inicio' },
     { path: '/calendar', icon: Calendar, label: 'Calendario' },
     { path: '/ovulation', icon: Droplets, label: 'Ovulación' },
     { path: '/symptoms', icon: Heart, label: 'Síntomas' },
