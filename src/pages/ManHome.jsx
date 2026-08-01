@@ -14,16 +14,21 @@ const ManHome = () => {
   const [cycleDay, setCycleDay] = useState(0);
   const [daysUntilPeriod, setDaysUntilPeriod] = useState(0);
   const [daysUntilOvulation, setDaysUntilOvulation] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadProfile = async () => {
-      const savedProfile = await getProfile();
-      if (savedProfile && savedProfile.gender === 'man') {
-        setProfile(savedProfile);
+      try {
+        setLoading(true);
+        setError(null);
         
-        // Cargar datos reales de la pareja usando el partnerCode
-        if (savedProfile.partnerCode) {
-          try {
+        const savedProfile = await getProfile();
+        if (savedProfile && savedProfile.gender === 'man') {
+          setProfile(savedProfile);
+          
+          // Cargar datos reales de la pareja usando el partnerCode
+          if (savedProfile.partnerCode) {
             const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
             if (partnerProfile) {
               setPartnerData(partnerProfile);
@@ -53,36 +58,72 @@ const ManHome = () => {
               const daysUntilOvulationCalc = ovulationDayIndex - currentCycleDay;
               setDaysUntilOvulation(daysUntilOvulationCalc);
             } else {
-              // Si no se encuentra la pareja, usar datos simulados
-              setPartnerData({
-                name: 'Tu Pareja',
-                cycle_length: 28,
-                period_length: 5,
-                last_period_start: new Date().toISOString().split('T')[0]
-              });
+              // Si no se encuentra la pareja, mostrar error
+              setError('No se encontró el perfil de tu pareja. Verifica el código.');
+              setPartnerData(null);
             }
-          } catch (error) {
-            console.error('Error loading partner profile:', error);
-            // Usar datos simulados en caso de error
-            setPartnerData({
-              name: 'Tu Pareja',
-              cycle_length: 28,
-              period_length: 5,
-              last_period_start: new Date().toISOString().split('T')[0]
-            });
+          } else {
+            setError('No tienes un código de pareja configurado.');
           }
+        } else if (savedProfile && savedProfile.gender !== 'man') {
+          navigate('/home');
+        } else {
+          navigate('/');
         }
-      } else if (savedProfile && savedProfile.gender !== 'man') {
-        navigate('/home');
-      } else {
-        navigate('/');
+      } catch (err) {
+        console.error('Error loading profile:', err);
+        setError('Error al cargar los datos. Intenta nuevamente.');
+      } finally {
+        setLoading(false);
       }
     };
     loadProfile();
   }, []);
 
+  if (loading) {
+    return (
+      <Layout title="Cargando..." showBackButton={false} showSettings={false}>
+        <div className="flex items-center justify-center min-h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando datos de tu pareja...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout title="Error" showBackButton={false} showSettings={false}>
+        <div className="flex items-center justify-center min-h-64">
+          <div className="text-center">
+            <div className="bg-red-50 rounded-full p-4 inline-block mb-4">
+              <span className="text-4xl">⚠️</span>
+            </div>
+            <p className="text-red-600 font-medium mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   if (!profile || !partnerData) {
-    return null;
+    return (
+      <Layout title="Error" showBackButton={false} showSettings={false}>
+        <div className="flex items-center justify-center min-h-64">
+          <div className="text-center">
+            <p className="text-gray-600">No se pudieron cargar los datos.</p>
+          </div>
+        </div>
+      </Layout>
+    );
   }
 
   const getPhaseColor = (phase) => {

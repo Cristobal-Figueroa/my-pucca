@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Copy, RefreshCw, Heart } from 'lucide-react';
-import { getProfile } from '../utils/storage';
+import { Users, Copy, RefreshCw, Heart, Key, CheckCircle } from 'lucide-react';
+import { getProfile, saveProfile, getPartnerProfile } from '../utils/storage';
 import Layout from '../components/Layout';
 
 const Partner = () => {
@@ -9,15 +9,31 @@ const Partner = () => {
   const [profile, setProfile] = useState(null);
   const [syncCode, setSyncCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const [partnerCode, setPartnerCode] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
+  const [isValid, setIsValid] = useState(null);
+  const [partnerName, setPartnerName] = useState('');
 
   useEffect(() => {
     const loadProfile = async () => {
       const savedProfile = await getProfile();
       if (savedProfile) {
         setProfile(savedProfile);
-        // Generar código de sincronización basado en el nombre y fecha de inicio
-        const code = generateSyncCode(savedProfile.name, savedProfile.lastPeriodStart);
-        setSyncCode(code);
+        
+        // Si es hombre, cargar el código de pareja ya guardado
+        if (savedProfile.gender === 'man' && savedProfile.partnerCode) {
+          setPartnerCode(savedProfile.partnerCode);
+          // Intentar cargar el nombre de la pareja
+          const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+          if (partnerProfile) {
+            setPartnerName(partnerProfile.name);
+            setIsValid(true);
+          }
+        } else if (savedProfile.gender === 'woman') {
+          // Si es mujer, generar su código
+          const code = generateSyncCode(savedProfile.name, savedProfile.lastPeriodStart);
+          setSyncCode(code);
+        }
       } else {
         navigate('/settings');
       }
@@ -52,10 +68,157 @@ const Partner = () => {
     }
   };
 
+  const handlePartnerCodeSubmit = async () => {
+    if (!partnerCode.trim()) {
+      return;
+    }
+
+    setIsValidating(true);
+    setIsValid(null);
+
+    const partnerProfile = await getPartnerProfile(partnerCode.toUpperCase());
+    
+    if (partnerProfile) {
+      setIsValid(true);
+      setPartnerName(partnerProfile.name);
+      
+      // Guardar el código en el perfil del hombre
+      const updatedProfile = {
+        ...profile,
+        partnerCode: partnerCode.toUpperCase()
+      };
+      await saveProfile(updatedProfile);
+      setProfile(updatedProfile);
+    } else {
+      setIsValid(false);
+    }
+    
+    setIsValidating(false);
+  };
+
   if (!profile) {
     return null;
   }
 
+  // Vista para hombre - ingresar código de pareja
+  if (profile.gender === 'man') {
+    return (
+      <Layout title="Sincronizar con Pareja" showBackButton={false}>
+        <div className="space-y-6">
+          {/* Instrucciones */}
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl p-6 text-white">
+            <div className="flex items-center mb-4">
+              <Heart className="mr-2" size={24} />
+              <h2 className="text-xl font-bold">Conecta con tu pareja</h2>
+            </div>
+            <p className="text-sm opacity-90">
+              Ingresa el código que tu pareja te compartió para ver su ciclo menstrual y apoyarla mejor.
+            </p>
+          </div>
+
+          {/* Estado de conexión */}
+          {isValid && partnerName ? (
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
+              <div className="flex items-center mb-4">
+                <CheckCircle className="text-green-600 mr-3" size={32} />
+                <div>
+                  <h3 className="text-lg font-semibold text-green-900">¡Conectado!</h3>
+                  <p className="text-sm text-green-700">Ahora puedes ver el ciclo de {partnerName}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/man-home')}
+                className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors"
+              >
+                Ver ciclo de {partnerName}
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Formulario para ingresar código */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+                  Ingresa el código de tu pareja
+                </h3>
+                
+                <div className="relative mb-4">
+                  <Key className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    value={partnerCode}
+                    onChange={(e) => {
+                      setPartnerCode(e.target.value.toUpperCase());
+                      setIsValid(null);
+                    }}
+                    placeholder="XXXXXX"
+                    maxLength={6}
+                    className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center text-3xl tracking-wider"
+                  />
+                </div>
+
+                {/* Estado de validación */}
+                {isValid === false && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                    <p className="text-sm text-red-800 text-center">
+                      Código no encontrado. Verifica con tu pareja.
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  onClick={handlePartnerCodeSubmit}
+                  disabled={isValidating}
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isValidating ? (
+                    <>
+                      <RefreshCw className="mr-2 animate-spin" size={20} />
+                      Validando...
+                    </>
+                  ) : (
+                    <>
+                      Conectar
+                      <Heart className="ml-2" size={20} />
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Instrucciones */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  ¿Cómo obtener el código?
+                </h3>
+                <div className="space-y-3 text-sm text-gray-700">
+                  <div className="flex items-start">
+                    <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center font-bold mr-3 mt-0.5">1</span>
+                    <p>Pide a tu pareja que vaya a la sección "Pareja" en su app</p>
+                  </div>
+                  <div className="flex items-start">
+                    <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center font-bold mr-3 mt-0.5">2</span>
+                    <p>Ella te mostrará un código de 6 caracteres</p>
+                  </div>
+                  <div className="flex items-start">
+                    <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center font-bold mr-3 mt-0.5">3</span>
+                    <p>Ingresa ese código aquí para conectar</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Nota de privacidad */}
+          <div className="bg-blue-50 rounded-2xl p-4">
+            <p className="text-sm text-blue-900 text-center">
+              🔒 La información de tu pareja se mantiene privada y segura. Solo tú podrás ver su ciclo.
+            </p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Vista para mujer - mostrar su código
   return (
     <Layout title="Sincronización con Pareja" showBackButton={false}>
       <div className="space-y-6">
