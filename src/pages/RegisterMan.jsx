@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Key, Heart, ArrowRight, RefreshCw, ArrowLeft } from 'lucide-react';
+import { saveProfile } from '../utils/storage';
 import Modal from '../components/Modal';
 
 const RegisterMan = () => {
@@ -12,7 +13,13 @@ const RegisterMan = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
-  const validateCode = () => {
+  const validateCode = async () => {
+    if (!name.trim()) {
+      setModalMessage('Por favor ingresa tu nombre');
+      setShowModal(true);
+      return;
+    }
+
     if (!partnerCode.trim()) {
       setModalMessage('Por favor ingresa el código de tu pareja');
       setShowModal(true);
@@ -22,11 +29,22 @@ const RegisterMan = () => {
     setIsValidating(true);
     
     // Simular validación del código
-    setTimeout(() => {
+    setTimeout(async () => {
       // Aquí iría la lógica real de validación contra el backend
       // Por ahora, aceptamos cualquier código de 6 caracteres
       if (partnerCode.length === 6) {
         setIsValid(true);
+        
+        // Guardar perfil del hombre
+        const profile = {
+          user_id: 'user_' + Date.now(),
+          name: name.trim(),
+          gender: 'man',
+          partnerCode: partnerCode.toUpperCase()
+        };
+        
+        await saveProfile(profile);
+        
         setTimeout(() => {
           navigate('/man-home');
         }, 1000);
