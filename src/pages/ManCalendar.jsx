@@ -5,6 +5,7 @@ import { getProfile } from '../utils/storage';
 import { getCyclePhase, CYCLE_PHASES } from '../utils/cycleCalculations';
 import { differenceInDays, startOfMonth, endOfMonth, eachDayOfInterval, format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
+import ManLayout from '../components/ManLayout';
 
 const ManCalendar = () => {
   const navigate = useNavigate();
@@ -18,12 +19,16 @@ const ManCalendar = () => {
       const savedProfile = await getProfile();
       if (savedProfile && savedProfile.gender === 'man') {
         setProfile(savedProfile);
-        // Simular datos de la pareja
+        // Simular datos de la pareja con fecha realista
+        const today = new Date();
+        const lastPeriodStart = new Date(today);
+        lastPeriodStart.setDate(today.getDate() - 8);
+        
         const simulatedPartner = {
           name: 'Tu Pareja',
           cycleLength: 28,
           periodLength: 5,
-          lastPeriodStart: '2026-07-20'
+          lastPeriodStart: lastPeriodStart.toISOString().split('T')[0]
         };
         setPartnerData(simulatedPartner);
         generateCalendar(simulatedPartner, currentDate);
@@ -93,25 +98,10 @@ const ManCalendar = () => {
   const monthName = format(currentDate, 'MMMM yyyy', { locale: es });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pb-20">
-      {/* Header */}
-      <div className="bg-white shadow-sm p-4">
-        <div className="max-w-md mx-auto flex items-center justify-between">
-          <button
-            onClick={() => navigate('/man-home')}
-            className="flex items-center text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            <span className="text-sm">Volver</span>
-          </button>
-          <h1 className="text-xl font-bold text-gray-900">Calendario</h1>
-          <div className="w-20"></div>
-        </div>
-      </div>
-
-      <div className="max-w-md mx-auto p-4">
+    <ManLayout title="Calendario" showBackButton={true}>
+      <div className="space-y-4">
         {/* Header del calendario */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))}
@@ -135,7 +125,7 @@ const ManCalendar = () => {
         </div>
 
         {/* Calendario */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
           {/* Días de la semana */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
@@ -194,7 +184,7 @@ const ManCalendar = () => {
         </div>
 
         {/* Información */}
-        <div className="mt-4 bg-white rounded-2xl p-4 shadow-sm">
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
           <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
             <Heart className="mr-2 text-pink-500" size={18} />
             Información
@@ -205,7 +195,7 @@ const ManCalendar = () => {
           </p>
         </div>
       </div>
-    </div>
+    </ManLayout>
   );
 };
 

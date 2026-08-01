@@ -4,6 +4,7 @@ import { ArrowLeft, Heart, Lightbulb, Calendar, Droplets, Utensils, Sparkles } f
 import { getProfile } from '../utils/storage';
 import { getCyclePhase, CYCLE_PHASES } from '../utils/cycleCalculations';
 import { differenceInDays } from 'date-fns';
+import ManLayout from '../components/ManLayout';
 
 const ManTips = () => {
   const navigate = useNavigate();
@@ -16,21 +17,23 @@ const ManTips = () => {
       const savedProfile = await getProfile();
       if (savedProfile && savedProfile.gender === 'man') {
         setProfile(savedProfile);
-        // Simular datos de la pareja
+        // Simular datos de la pareja con fecha realista
+        const today = new Date();
+        const lastPeriodStart = new Date(today);
+        lastPeriodStart.setDate(today.getDate() - 8);
+        
         const simulatedPartner = {
           name: 'Tu Pareja',
           cycleLength: 28,
           periodLength: 5,
-          lastPeriodStart: '2026-07-20'
+          lastPeriodStart: lastPeriodStart.toISOString().split('T')[0]
         };
         setPartnerData(simulatedPartner);
         
         // Calcular fase actual
-        const today = new Date();
-        const lastPeriodStart = new Date(simulatedPartner.lastPeriodStart);
         const phase = getCyclePhase(
           today,
-          lastPeriodStart,
+          new Date(simulatedPartner.lastPeriodStart),
           simulatedPartner.cycleLength,
           simulatedPartner.periodLength
         );
@@ -240,81 +243,66 @@ const ManTips = () => {
   const currentTips = tipsByPhase[currentPhase];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pb-20">
-      {/* Header */}
-      <div className="bg-white shadow-sm p-4">
-        <div className="max-w-md mx-auto flex items-center justify-between">
-          <button
-            onClick={() => navigate('/man-home')}
-            className="flex items-center text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            <span className="text-sm">Volver</span>
-          </button>
-          <h1 className="text-xl font-bold text-gray-900">Consejos</h1>
-          <div className="w-20"></div>
-        </div>
-      </div>
-
-      <div className="max-w-md mx-auto p-4 space-y-6">
-        {/* Hero Section */}
-        <div className={`bg-gradient-to-r ${currentTips.color} rounded-3xl p-6 text-white shadow-lg`}>
-          <div className="flex items-center justify-between mb-4">
-            <Lightbulb size={40} />
-            <span className="text-sm bg-white/20 px-3 py-1 rounded-full">
-              {partnerData.name}
-            </span>
-          </div>
-          <h2 className="text-3xl font-bold mb-2">
-            {currentTips.title}
-          </h2>
-          <p className="text-white/80 mb-4">
-            {currentTips.subtitle}
-          </p>
-          <p className="text-sm text-white/70">
-            Estos consejos te ayudarán a apoyar a tu pareja durante esta fase de su ciclo.
-          </p>
-        </div>
-
-        {/* Categorías de consejos */}
-        {currentTips.categories.map((category, index) => (
-          <div key={index} className="bg-white rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center mb-4">
-              <div className={`p-3 rounded-xl mr-3 ${category.color}`}>
-                <category.icon size={24} />
+    <ManLayout title="Consejos" showBackButton={true}>
+      <div className="space-y-6">
+            {/* Hero Section */}
+            <div className={`bg-gradient-to-r ${currentTips.color} rounded-3xl p-6 text-white shadow-lg`}>
+              <div className="flex items-center justify-between mb-4">
+                <Lightbulb size={40} />
+                <span className="text-sm bg-white/20 px-3 py-1 rounded-full">
+                  {partnerData.name}
+                </span>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">{category.title}</h3>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {category.tips.map((tip, tipIndex) => (
-                <div key={tipIndex} className="border-l-4 border-pink-300 pl-4 py-2">
-                  <h4 className="font-medium text-gray-900 mb-1">{tip.title}</h4>
-                  <p className="text-sm text-gray-600">{tip.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-
-        {/* Nota informativa */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-start">
-            <Lightbulb className="text-yellow-300 mr-3 mt-1" size={24} />
-            <div>
-              <h3 className="font-semibold text-white mb-2">Recuerda</h3>
-              <p className="text-sm text-white/90">
-                Cada mujer es diferente. Estos consejos son generales y pueden no aplicarse a todas. 
-                Lo más importante es comunicarte con tu pareja y preguntarle qué necesita en cada momento.
+              <h2 className="text-3xl font-bold mb-2">
+                {currentTips.title}
+              </h2>
+              <p className="text-white/80 mb-4">
+                {currentTips.subtitle}
+              </p>
+              <p className="text-sm text-white/70">
+                Estos consejos te ayudarán a apoyar a tu pareja durante esta fase de su ciclo.
               </p>
             </div>
+
+            {/* Categorías de consejos */}
+            {currentTips.categories.map((category, index) => (
+              <div key={index} className="bg-white rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center mb-4">
+                  <div className={`p-3 rounded-xl mr-3 ${category.color}`}>
+                    <category.icon size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{category.title}</h3>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {category.tips.map((tip, tipIndex) => (
+                    <div key={tipIndex} className="border-l-4 border-pink-300 pl-4 py-2">
+                      <h4 className="font-medium text-gray-900 mb-1">{tip.title}</h4>
+                      <p className="text-sm text-gray-600">{tip.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {/* Nota informativa */}
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-start">
+                <Lightbulb className="text-yellow-300 mr-3 mt-1" size={24} />
+                <div>
+                  <h3 className="font-semibold text-white mb-2">Recuerda</h3>
+                  <p className="text-sm text-white/90">
+                    Cada mujer es diferente. Estos consejos son generales y pueden no aplicarse a todas. 
+                    Lo más importante es comunicarte con tu pareja y preguntarle qué necesita en cada momento.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+        </ManLayout>
+      );
+    }
 
 export default ManTips;

@@ -4,6 +4,7 @@ import { Heart, Calendar, Droplets, Lightbulb, User, RefreshCw, Activity } from 
 import { getProfile } from '../utils/storage';
 import { getCyclePhase, CYCLE_PHASES } from '../utils/cycleCalculations';
 import { differenceInDays } from 'date-fns';
+import ManLayout from '../components/ManLayout';
 
 const ManHome = () => {
   const navigate = useNavigate();
@@ -19,29 +20,31 @@ const ManHome = () => {
       const savedProfile = await getProfile();
       if (savedProfile && savedProfile.gender === 'man') {
         setProfile(savedProfile);
-        // Aquí se cargarían los datos de la pareja desde el backend
-        // Por ahora, simulamos datos de la pareja
+        // Aquí se cargarían los datos de la pareja desde el backend usando el partnerCode
+        // Por ahora, simulamos datos de la pareja con fecha más realista
+        const today = new Date();
+        const lastPeriodStart = new Date(today);
+        lastPeriodStart.setDate(today.getDate() - 8); // hace 8 días empezó el periodo
+        
         const simulatedPartner = {
           name: 'Tu Pareja',
           cycleLength: 28,
           periodLength: 5,
-          lastPeriodStart: '2026-07-20'
+          lastPeriodStart: lastPeriodStart.toISOString().split('T')[0]
         };
         setPartnerData(simulatedPartner);
         
         // Calcular fase actual de la pareja
-        const today = new Date();
-        const lastPeriodStart = new Date(simulatedPartner.lastPeriodStart);
         const phase = getCyclePhase(
           today,
-          lastPeriodStart,
+          new Date(simulatedPartner.lastPeriodStart),
           simulatedPartner.cycleLength,
           simulatedPartner.periodLength
         );
         setCurrentPhase(phase);
         
         // Calcular día del ciclo
-        const daysSinceLastPeriod = differenceInDays(today, lastPeriodStart);
+        const daysSinceLastPeriod = differenceInDays(today, new Date(simulatedPartner.lastPeriodStart));
         const currentCycleDay = ((daysSinceLastPeriod % simulatedPartner.cycleLength) + simulatedPartner.cycleLength) % simulatedPartner.cycleLength;
         setCycleDay(currentCycleDay + 1);
         
@@ -108,120 +111,224 @@ const ManHome = () => {
   const lutealPercent = ((cycleLength - ovulationDayIndex - 1) / cycleLength) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pb-20">
-      {/* Header */}
-      <div className="bg-white shadow-sm p-4">
-        <div className="max-w-md mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <img src="/logo.jpg" alt="Mi Pucca" className="w-8 h-8 rounded-full mr-2 object-cover" />
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">
-                Hola, {profile.name} 👋
-              </h1>
-              <p className="text-sm text-gray-600">
-                Conectado con {partnerData.name}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => navigate('/settings')}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <User className="text-gray-600" size={24} />
-          </button>
-        </div>
-      </div>
-
-      <div className="max-w-md mx-auto p-4 space-y-6">
+    <ManLayout>
+      <div className="space-y-6">
         {/* Círculo del ciclo de la pareja */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-            Ciclo de {partnerData.name}
-          </h3>
-          <div className="relative w-64 h-64 mx-auto">
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">Fases del ciclo</h3>
+          <div className="relative w-80 h-80 mx-auto">
+            {/* Círculo base con proporciones reales */}
             <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-              {/* Fondo del círculo */}
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="8" />
-              
-              {/* Menstruación */}
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="8"
-                strokeDasharray={`${menstruationPercent * 2.83} 283`}
-                strokeDashoffset="0"
-                opacity="0.7"
-              />
-              
-              {/* Fase Folicular */}
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="#22c55e"
-                strokeWidth="8"
-                strokeDasharray={`${follicularPercent * 2.83} 283`}
-                strokeDashoffset={`-${menstruationPercent * 2.83}`}
-                opacity="0.7"
-              />
-              
-              {/* Ovulación */}
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="#a855f7"
-                strokeWidth="8"
-                strokeDasharray={`${ovulationPercent * 2.83} 283`}
-                strokeDashoffset={`-${(menstruationPercent + follicularPercent) * 2.83}`}
-                opacity="0.7"
-              />
-              
-              {/* Fase Lútea */}
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="#eab308"
-                strokeWidth="8"
-                strokeDasharray={`${lutealPercent * 2.83} 283`}
-                strokeDashoffset={`-${(menstruationPercent + follicularPercent + ovulationPercent) * 2.83}`}
-                opacity="0.7"
-              />
+              {(() => {
+                const circumference = 2 * Math.PI * 38; // ~238.76
+                const periodLength = partnerData.periodLength; // días de menstruación
+                const ovulationDay = partnerData.cycleLength - 14;
+                
+                // Calcular proporciones reales según duración correcta de fases
+                const menstruationPercent = periodLength / partnerData.cycleLength;
+                const ovulationPercent = 1 / partnerData.cycleLength; // 1 día de ovulación
+                const lutealPercent = 14 / partnerData.cycleLength; // 14 días fase lútea (después de ovulación)
+                const follicularPercent = 1 - menstruationPercent - ovulationPercent - lutealPercent;
+                
+                const menstruationLength = circumference * menstruationPercent;
+                const follicularLength = circumference * follicularPercent;
+                const ovulationLength = circumference * ovulationPercent;
+                const lutealLength = circumference * lutealPercent;
+                
+                const menstruationOffset = 0;
+                const follicularOffset = -menstruationLength;
+                const ovulationOffset = -(menstruationLength + follicularLength);
+                const lutealOffset = -(menstruationLength + follicularLength + ovulationLength);
+                
+                // Líneas divisorias internas (para separar)
+                const innerRadius = 32; // borde interno del círculo de colores
+                const outerRadius = 44; // borde externo del círculo de colores (líneas más cortas)
+                const textRadius = 38; // radio para los números (entre líneas)
+                
+                // Calcular día actual usando differenceInDays (igual que getCyclePhase en cycleCalculations.js)
+                const today = new Date();
+                const lastPeriodStart = new Date(partnerData.lastPeriodStart);
+                const daysSinceLastPeriod = differenceInDays(today, lastPeriodStart);
+                const zeroIndexedDay = ((daysSinceLastPeriod % partnerData.cycleLength) + partnerData.cycleLength) % partnerData.cycleLength; // 0-indexed (0-27)
+                const currentDay = zeroIndexedDay + 1; // 1-indexed (1-28)
+                
+                // Calcular el segmento del día actual
+                const daySegmentLength = circumference / partnerData.cycleLength;
+                const daySegmentOffset = -(zeroIndexedDay * daySegmentLength);
+                
+                // Color del día actual (rosa fijo)
+                const currentDayColor = '#ec4899';
+                
+                return (
+                  <>
+                    {/* Círculos de colores (base) con transparencia */}
+                    {/* Menstruación */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="14"
+                      strokeDasharray={`${menstruationLength} ${circumference}`}
+                      strokeDashoffset={menstruationOffset}
+                      opacity="0.7"
+                    />
+                    {/* Folicular */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#22c55e"
+                      strokeWidth="14"
+                      strokeDasharray={`${follicularLength} ${circumference}`}
+                      strokeDashoffset={follicularOffset}
+                      opacity="0.7"
+                    />
+                    {/* Ovulación */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#a855f7"
+                      strokeWidth="14"
+                      strokeDasharray={`${ovulationLength} ${circumference}`}
+                      strokeDashoffset={ovulationOffset}
+                      opacity="0.7"
+                    />
+                    {/* Lútea */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#eab308"
+                      strokeWidth="14"
+                      strokeDasharray={`${lutealLength} ${circumference}`}
+                      strokeDashoffset={lutealOffset}
+                      opacity="0.7"
+                    />
+                    
+                    {/* Segmento del día actual (pintado completo) */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke={currentDayColor}
+                      strokeWidth="16"
+                      strokeDasharray={`${daySegmentLength} ${circumference}`}
+                      strokeDashoffset={daySegmentOffset}
+                    />
+                    
+                    {/* Líneas divisorias para cada día (ligeras y grises) */}
+                    {Array.from({ length: partnerData.cycleLength }).map((_, dayIndex) => {
+                      const angle = (dayIndex / partnerData.cycleLength) * 360;
+                      const radians = angle * (Math.PI / 180);
+                      const x1 = 50 + innerRadius * Math.cos(radians);
+                      const y1 = 50 + innerRadius * Math.sin(radians);
+                      const x2 = 50 + outerRadius * Math.cos(radians);
+                      const y2 = 50 + outerRadius * Math.sin(radians);
+                      
+                      // Posición del número (entre líneas)
+                      const midAngle = ((dayIndex + 0.5) / partnerData.cycleLength) * 360;
+                      const midRadians = midAngle * (Math.PI / 180);
+                      const textX = 50 + textRadius * Math.cos(midRadians);
+                      const textY = 50 + textRadius * Math.sin(midRadians);
+                      
+                      // Determinar si es el día actual (dayIndex es 0-indexed, zeroIndexedDay es 0-indexed)
+                      const isCurrentDay = dayIndex === zeroIndexedDay;
+                      
+                      // Color del número según fase (ovulación es 1 solo día: cycleLength - 14)
+                      const ovulationDayIndex = partnerData.cycleLength - 14;
+                      let numberColor = '#ffffff';
+                      if (dayIndex < periodLength) {
+                        numberColor = '#fff1f2';
+                      } else if (dayIndex < ovulationDayIndex) {
+                        numberColor = '#f0fdf4';
+                      } else if (dayIndex === ovulationDayIndex) {
+                        numberColor = '#faf5ff';
+                      } else {
+                        numberColor = '#fefce8';
+                      }
+                      
+                      return (
+                        <g key={dayIndex}>
+                          <line
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            stroke="#ffffff"
+                            strokeWidth="0.5"
+                            opacity="0.5"
+                          />
+                          {/* Número del día (entre líneas) */}
+                          <text
+                            x={textX}
+                            y={textY}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            fontSize="5"
+                            fontWeight={isCurrentDay ? "bold" : "normal"}
+                            fill={isCurrentDay ? "#ffffff" : numberColor}
+                            transform={`rotate(${midAngle} ${textX} ${textY})`}
+                          >
+                            {dayIndex + 1}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </>
+                );
+              })()}
             </svg>
             
-            {/* Día actual */}
+            {/* Centro con fase actual */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <p className="text-3xl font-bold text-gray-900">{cycleDay}</p>
-                <p className="text-xs text-gray-600">Día {cycleDay} de {cycleLength}</p>
+                <div className="text-3xl mb-1">
+                  {currentPhase === 'menstruation' ? '🩸' : 
+                   currentPhase === 'follicular' ? '🌱' : 
+                   currentPhase === 'ovulation' ? '🥚' : '🌙'}
+                </div>
+                <p className="text-xs font-semibold text-gray-700">
+                  {currentPhase === 'menstruation' ? 'Menstruación' : 
+                   currentPhase === 'follicular' ? 'Folicular' : 
+                   currentPhase === 'ovulation' ? 'Ovulación' : 'Lútea'}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Día {(() => {
+                    const today = new Date();
+                    const lastPeriodStart = new Date(partnerData.lastPeriodStart);
+                    const daysSinceLastPeriod = differenceInDays(today, lastPeriodStart);
+                    const zeroIndexed = ((daysSinceLastPeriod % partnerData.cycleLength) + partnerData.cycleLength) % partnerData.cycleLength;
+                    return zeroIndexed + 1;
+                  })()} de {partnerData.cycleLength}
+                </p>
               </div>
             </div>
           </div>
-          
-          {/* Leyenda */}
-          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+
+          {/* Leyenda con días */}
+          <div className="grid grid-cols-2 gap-3 mt-6">
             <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-red-500 mr-2 opacity-70"></div>
-              <span className="text-gray-700">Menstruación</span>
+              <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+              <span className="text-sm text-gray-700">Menstruación {partnerData.periodLength}d</span>
             </div>
             <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-green-500 mr-2 opacity-70"></div>
-              <span className="text-gray-700">Folicular</span>
+              <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+              <span className="text-sm text-gray-700">Folicular {partnerData.cycleLength - partnerData.periodLength - 14}d</span>
             </div>
             <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-purple-500 mr-2 opacity-70"></div>
-              <span className="text-gray-700">Ovulación</span>
+              <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+              <span className="text-sm text-gray-700">Ovulación 1d</span>
             </div>
             <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2 opacity-70"></div>
-              <span className="text-gray-700">Lútea</span>
+              <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+              <span className="text-sm text-gray-700">Lútea 14d</span>
             </div>
           </div>
         </div>
@@ -323,7 +430,7 @@ const ManHome = () => {
           <span className="font-semibold text-gray-900">Sincronizar datos</span>
         </button>
       </div>
-    </div>
+    </ManLayout>
   );
 };
 

@@ -4,6 +4,7 @@ import { ArrowLeft, Heart, Calendar as CalendarIcon, Smile, Flame, Utensils, Zap
 import { getProfile } from '../utils/storage';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
+import ManLayout from '../components/ManLayout';
 
 const ManSymptoms = () => {
   const navigate = useNavigate();
@@ -83,23 +84,8 @@ const ManSymptoms = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pb-20">
-      {/* Header */}
-      <div className="bg-white shadow-sm p-4">
-        <div className="max-w-md mx-auto flex items-center justify-between">
-          <button
-            onClick={() => navigate('/man-home')}
-            className="flex items-center text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            <span className="text-sm">Volver</span>
-          </button>
-          <h1 className="text-xl font-bold text-gray-900">Síntomas</h1>
-          <div className="w-20"></div>
-        </div>
-      </div>
-
-      <div className="max-w-md mx-auto p-4 space-y-6">
+    <ManLayout title="Síntomas" showBackButton={true}>
+      <div className="space-y-6">
         {/* Selector de fecha */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -184,7 +170,7 @@ const ManSymptoms = () => {
           </p>
         </div>
       </div>
-    </div>
+    </ManLayout>
   );
 };
 
