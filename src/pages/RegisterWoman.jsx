@@ -35,8 +35,13 @@ const RegisterWoman = () => {
       gender: 'woman'
     };
 
-    await saveProfile(profile);
-    navigate('/home');
+    const saved = await saveProfile(profile);
+    if (saved) {
+      navigate('/home');
+    } else {
+      setModalMessage('Error al guardar el perfil. Intenta nuevamente.');
+      setShowModal(true);
+    }
   };
 
   return (

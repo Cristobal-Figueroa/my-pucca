@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Key, Heart, ArrowRight, RefreshCw, ArrowLeft } from 'lucide-react';
-import { saveProfile } from '../utils/storage';
+import { saveProfile, getPartnerProfile } from '../utils/storage';
 import Modal from '../components/Modal';
 
 const RegisterMan = () => {
@@ -28,31 +28,36 @@ const RegisterMan = () => {
 
     setIsValidating(true);
     
-    // Simular validación del código
-    setTimeout(async () => {
-      // Aquí iría la lógica real de validación contra el backend
-      // Por ahora, aceptamos cualquier código de 6 caracteres
-      if (partnerCode.length === 6) {
-        setIsValid(true);
-        
-        // Guardar perfil del hombre
-        const profile = {
-          user_id: 'user_' + Date.now(),
-          name: name.trim(),
-          gender: 'man',
-          partnerCode: partnerCode.toUpperCase()
-        };
-        
-        await saveProfile(profile);
-        
+    // Validar código contra el backend
+    const partnerProfile = await getPartnerProfile(partnerCode.toUpperCase());
+    
+    if (partnerProfile) {
+      setIsValid(true);
+      
+      // Guardar perfil del hombre en la DB
+      const profile = {
+        user_id: 'user_' + Date.now(),
+        name: name.trim(),
+        gender: 'man',
+        partnerCode: partnerCode.toUpperCase()
+      };
+      
+      const saved = await saveProfile(profile);
+      
+      if (saved) {
         setTimeout(() => {
           navigate('/man-home');
         }, 1000);
       } else {
+        setModalMessage('Error al guardar el perfil. Intenta nuevamente.');
+        setShowModal(true);
         setIsValid(false);
         setIsValidating(false);
       }
-    }, 1500);
+    } else {
+      setIsValid(false);
+      setIsValidating(false);
+    }
   };
 
   const handleRefresh = () => {

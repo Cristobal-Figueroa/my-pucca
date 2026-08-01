@@ -81,6 +81,27 @@ export const savePeriods = async (periods) => {
   }
 };
 
+// Guardar periodos en DB (bulk)
+export const savePeriodsToDB = async (periods) => {
+  try {
+    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    if (!userId) return false;
+    
+    const response = await apiRequest(API_ENDPOINTS.SAVE_PERIODS_BULK, {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        periods: periods
+      })
+    });
+    
+    return response.success;
+  } catch (error) {
+    console.error('Error saving periods to DB:', error);
+    return false;
+  }
+};
+
 export const getPeriods = async () => {
   try {
     const periods = localStorage.getItem(STORAGE_KEYS.PERIODS);
@@ -124,6 +145,20 @@ export const updatePeriod = async (periodId, updatedPeriod) => {
     if (index !== -1) {
       periods[index] = updatedPeriod;
       await savePeriods(periods);
+      
+      // Enviar al backend
+      const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+      if (userId) {
+        await apiRequest(API_ENDPOINTS.SAVE_PERIOD, {
+          method: 'POST',
+          body: JSON.stringify({
+            user_id: userId,
+            date: updatedPeriod.date,
+            notes: updatedPeriod.notes || ''
+          })
+        });
+      }
+      
       return true;
     }
     return false;
@@ -136,8 +171,13 @@ export const updatePeriod = async (periodId, updatedPeriod) => {
 export const deletePeriod = async (periodId) => {
   try {
     const periods = await getPeriods();
+    const periodToDelete = periods.find(p => p.id === periodId);
     const filteredPeriods = periods.filter(p => p.id !== periodId);
     await savePeriods(filteredPeriods);
+    
+    // Nota: No hay endpoint para eliminar periodos en el backend
+    // Se maneja actualizando el registro con notas vacías o similar si es necesario
+    
     return true;
   } catch (error) {
     console.error('Error deleting period:', error);
@@ -152,6 +192,27 @@ export const saveSymptoms = async (symptoms) => {
     return true;
   } catch (error) {
     console.error('Error saving symptoms:', error);
+    return false;
+  }
+};
+
+// Guardar síntomas en DB (bulk)
+export const saveSymptomsToDB = async (symptoms) => {
+  try {
+    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    if (!userId) return false;
+    
+    const response = await apiRequest(API_ENDPOINTS.SAVE_SYMPTOMS_BULK, {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        symptoms: symptoms
+      })
+    });
+    
+    return response.success;
+  } catch (error) {
+    console.error('Error saving symptoms to DB:', error);
     return false;
   }
 };
@@ -208,6 +269,29 @@ export const updateSymptom = async (symptomId, updatedSymptom) => {
     if (index !== -1) {
       symptoms[index] = updatedSymptom;
       await saveSymptoms(symptoms);
+      
+      // Enviar al backend
+      const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+      if (userId) {
+        await apiRequest(API_ENDPOINTS.SAVE_SYMPTOM, {
+          method: 'POST',
+          body: JSON.stringify({
+            user_id: userId,
+            date: updatedSymptom.date,
+            mood: updatedSymptom.mood || null,
+            libido: updatedSymptom.libido || null,
+            cravings: updatedSymptom.cravings || null,
+            energy: updatedSymptom.energy || null,
+            sleep: updatedSymptom.sleep || null,
+            pain: updatedSymptom.pain || null,
+            skin: updatedSymptom.skin || null,
+            digestion: updatedSymptom.digestion || null,
+            headache: updatedSymptom.headache || null,
+            notes: updatedSymptom.notes || ''
+          })
+        });
+      }
+      
       return true;
     }
     return false;
@@ -222,6 +306,10 @@ export const deleteSymptom = async (symptomId) => {
     const symptoms = await getSymptoms();
     const filteredSymptoms = symptoms.filter(s => s.id !== symptomId);
     await saveSymptoms(filteredSymptoms);
+    
+    // Nota: No hay endpoint para eliminar síntomas en el backend
+    // Se maneja actualizando el registro con valores null si es necesario
+    
     return true;
   } catch (error) {
     console.error('Error deleting symptom:', error);

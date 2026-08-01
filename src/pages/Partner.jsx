@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Copy, RefreshCw, Heart, Key, CheckCircle } from 'lucide-react';
-import { getProfile, saveProfile, getPartnerProfile } from '../utils/storage';
+import { Users, Copy, RefreshCw, Heart, Key, CheckCircle, Upload, Cloud } from 'lucide-react';
+import { getProfile, saveProfile, getPartnerProfile, savePeriodsToDB, saveSymptomsToDB, getPeriods, getSymptoms } from '../utils/storage';
 import Layout from '../components/Layout';
 
 const Partner = () => {
@@ -13,6 +13,8 @@ const Partner = () => {
   const [isValidating, setIsValidating] = useState(false);
   const [isValid, setIsValid] = useState(null);
   const [partnerName, setPartnerName] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('');
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -94,6 +96,34 @@ const Partner = () => {
     }
     
     setIsValidating(false);
+  };
+
+  const handleSyncToDB = async () => {
+    setSyncing(true);
+    setSyncMessage('');
+    
+    try {
+      // Sincronizar perfil
+      const profileSaved = await saveProfile(profile);
+      
+      if (profile.gender === 'woman') {
+        // Sincronizar periodos y síntomas si es mujer
+        const periods = await getPeriods();
+        await savePeriodsToDB(periods);
+        
+        const symptoms = await getSymptoms();
+        await saveSymptomsToDB(symptoms);
+      }
+      
+      setSyncMessage('¡Datos sincronizados exitosamente!');
+      setTimeout(() => setSyncMessage(''), 3000);
+    } catch (error) {
+      console.error('Error syncing to DB:', error);
+      setSyncMessage('Error al sincronizar. Intenta nuevamente.');
+      setTimeout(() => setSyncMessage(''), 3000);
+    } finally {
+      setSyncing(false);
+    }
   };
 
   if (!profile) {
@@ -207,6 +237,39 @@ const Partner = () => {
             </>
           )}
 
+          {/* Botón de sincronización con DB */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Cloud className="mr-2 text-blue-500" size={20} />
+              Sincronizar datos
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Sube todos tus datos locales a la base de datos para mantenerlos seguros y sincronizados.
+            </p>
+            <button
+              onClick={handleSyncToDB}
+              disabled={syncing}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {syncing ? (
+                <>
+                  <RefreshCw className="mr-2 animate-spin" size={20} />
+                  Sincronizando...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2" size={20} />
+                  Subir datos a la nube
+                </>
+              )}
+            </button>
+            {syncMessage && (
+              <p className={`text-sm mt-3 text-center ${syncMessage.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
+                {syncMessage}
+              </p>
+            )}
+          </div>
+
           {/* Nota de privacidad */}
           <div className="bg-blue-50 rounded-2xl p-4">
             <p className="text-sm text-blue-900 text-center">
@@ -283,6 +346,39 @@ const Partner = () => {
               <p>¡Listo! Tu pareja podrá ver tu ciclo</p>
             </div>
           </div>
+        </div>
+
+        {/* Botón de sincronización con DB */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Cloud className="mr-2 text-pink-500" size={20} />
+            Sincronizar datos
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Sube todos tus datos locales a la base de datos para mantenerlos seguros y sincronizados.
+          </p>
+          <button
+            onClick={handleSyncToDB}
+            disabled={syncing}
+            className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            {syncing ? (
+              <>
+                <RefreshCw className="mr-2 animate-spin" size={20} />
+                Sincronizando...
+              </>
+            ) : (
+              <>
+                <Upload className="mr-2" size={20} />
+                Subir datos a la nube
+              </>
+            )}
+          </button>
+          {syncMessage && (
+            <p className={`text-sm mt-3 text-center ${syncMessage.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
+              {syncMessage}
+            </p>
+          )}
         </div>
 
         {/* Nota de privacidad */}

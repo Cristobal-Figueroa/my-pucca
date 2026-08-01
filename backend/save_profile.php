@@ -20,8 +20,9 @@ if (empty($name)) {
     sendError('El nombre es requerido');
 }
 
-if (empty($last_period_start)) {
-    sendError('La fecha del último periodo es requerida');
+// La fecha del último periodo solo es requerida para mujeres
+if ($gender === 'woman' && empty($last_period_start)) {
+    sendError('La fecha del último periodo es requerida para mujeres');
 }
 
 // Si no hay user_id, generar uno nuevo

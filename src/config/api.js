@@ -11,10 +11,12 @@ export const API_ENDPOINTS = {
   
   // Periodos
   SAVE_PERIOD: '/save_period.php',
+  SAVE_PERIODS_BULK: '/save_periods_bulk.php',
   GET_PERIODS: '/get_periods.php',
   
   // Síntomas
   SAVE_SYMPTOM: '/save_symptom.php',
+  SAVE_SYMPTOMS_BULK: '/save_symptoms_bulk.php',
   GET_SYMPTOMS: '/get_symptoms.php',
   GET_PARTNER_SYMPTOMS: '/get_partner_symptoms.php',
   
