@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { getProfile, addPeriod, getPeriods, saveProfile } from '../utils/storage';
+import { getProfile, addPeriod, getPeriods, saveProfile, parseLocalDate } from '../utils/storage';
 import { generateCalendarData, CYCLE_PHASES } from '../utils/cycleCalculations';
 import { format, addMonths, subMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -35,7 +35,7 @@ const Calendar = () => {
     const data = generateCalendarData(
       date.getFullYear(),
       date.getMonth(),
-      new Date(profileData.lastPeriodStart),
+      parseLocalDate(profileData.lastPeriodStart),
       profileData.cycleLength,
       profileData.periodLength
     );

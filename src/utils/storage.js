@@ -71,6 +71,18 @@ export const getProfile = async () => {
   }
 };
 
+// Función auxiliar para parsear fechas como fecha local (no UTC)
+export const parseLocalDate = (dateString) => {
+  if (!dateString) return null;
+  // Si es YYYY-MM-DD, parsear como fecha local
+  if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+  // Si no, usar el parseo normal
+  return new Date(dateString);
+};
+
 export const deleteProfile = () => {
   try {
     localStorage.removeItem(STORAGE_KEYS.PROFILE);

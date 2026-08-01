@@ -89,11 +89,20 @@ export const getDaysUntilNextPeriod = (lastPeriodStart, cycleLength) => {
   return differenceInDays(nextPeriod, today);
 };
 
-// Calcular días hasta la ovulación
+// Calcular días hasta la ovulación (siempre la próxima)
 export const getDaysUntilOvulation = (lastPeriodStart, cycleLength) => {
-  const ovulationDate = calculateOvulationDate(lastPeriodStart, cycleLength);
   const today = new Date();
-  return differenceInDays(ovulationDate, today);
+  const currentOvulation = calculateOvulationDate(lastPeriodStart, cycleLength);
+  let daysUntil = differenceInDays(currentOvulation, today);
+  
+  // Si ya pasó la ovulación del ciclo actual, calcular la del siguiente ciclo
+  if (daysUntil < 0) {
+    const nextPeriod = calculateNextPeriod(lastPeriodStart, cycleLength);
+    const nextOvulation = calculateOvulationDate(nextPeriod, cycleLength);
+    daysUntil = differenceInDays(nextOvulation, today);
+  }
+  
+  return daysUntil;
 };
 
 // Generar datos del calendario para un mes

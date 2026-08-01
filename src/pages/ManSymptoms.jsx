@@ -15,6 +15,82 @@ const ManSymptoms = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const moodOptions = [
+    { value: 'happy', label: 'Feliz 😊', color: 'bg-green-100 text-green-800' },
+    { value: 'sad', label: 'Triste 😢', color: 'bg-blue-100 text-blue-800' },
+    { value: 'anxious', label: 'Ansiosa 😰', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'irritable', label: 'Irritable 😤', color: 'bg-red-100 text-red-800' },
+    { value: 'tired', label: 'Cansada 😴', color: 'bg-purple-100 text-purple-800' },
+    { value: 'energetic', label: 'Energética ⚡', color: 'bg-orange-100 text-orange-800' },
+    { value: 'calm', label: 'Tranquila 😌', color: 'bg-teal-100 text-teal-800' },
+    { value: 'stressed', label: 'Estresada 😫', color: 'bg-red-200 text-red-900' },
+    { value: 'confident', label: 'Segura 💪', color: 'bg-indigo-100 text-indigo-800' },
+  ];
+
+  const libidoOptions = [
+    { value: 'very_high', label: 'Muy alta 🔥🔥', color: 'bg-red-200 text-red-900' },
+    { value: 'high', label: 'Alta 🔥', color: 'bg-red-100 text-red-800' },
+    { value: 'medium', label: 'Media 💕', color: 'bg-pink-100 text-pink-800' },
+    { value: 'low', label: 'Baja 💤', color: 'bg-gray-100 text-gray-800' },
+    { value: 'very_low', label: 'Muy baja 😴', color: 'bg-gray-200 text-gray-900' },
+  ];
+
+  const cravingsOptions = [
+    { value: 'sweet', label: 'Dulces 🍫', color: 'bg-amber-100 text-amber-800' },
+    { value: 'salty', label: 'Salados 🍟', color: 'bg-blue-100 text-blue-800' },
+    { value: 'spicy', label: 'Picantes 🌶️', color: 'bg-red-100 text-red-800' },
+    { value: 'chocolate', label: 'Chocolate 🍫', color: 'bg-amber-200 text-amber-900' },
+    { value: 'carbs', label: 'Carbohidratos 🍞', color: 'bg-orange-100 text-orange-800' },
+    { value: 'acidic', label: 'Ácidos 🍋', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'none', label: 'Ninguno ✅', color: 'bg-green-100 text-green-800' },
+  ];
+
+  const energyOptions = [
+    { value: 'very_high', label: 'Muy alta ⚡⚡', color: 'bg-green-200 text-green-900' },
+    { value: 'high', label: 'Alta ⚡', color: 'bg-green-100 text-green-800' },
+    { value: 'medium', label: 'Media 🔄', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'low', label: 'Baja 🪫', color: 'bg-red-100 text-red-800' },
+    { value: 'very_low', label: 'Muy baja 😴', color: 'bg-red-200 text-red-900' },
+  ];
+
+  const sleepOptions = [
+    { value: 'excellent', label: 'Excelente 😴', color: 'bg-indigo-100 text-indigo-800' },
+    { value: 'good', label: 'Buena 😊', color: 'bg-blue-100 text-blue-800' },
+    { value: 'fair', label: 'Regular 😐', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'poor', label: 'Mala 😫', color: 'bg-orange-100 text-orange-800' },
+    { value: 'terrible', label: 'Terrible 😱', color: 'bg-red-100 text-red-800' },
+  ];
+
+  const painOptions = [
+    { value: 'none', label: 'Ninguno ✅', color: 'bg-green-100 text-green-800' },
+    { value: 'mild', label: 'Leve 😣', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'moderate', label: 'Moderado 😖', color: 'bg-orange-100 text-orange-800' },
+    { value: 'severe', label: 'Severo 😫', color: 'bg-red-100 text-red-800' },
+  ];
+
+  const skinOptions = [
+    { value: 'clear', label: 'Limpia ✨', color: 'bg-green-100 text-green-800' },
+    { value: 'minor', label: 'Leve 🌱', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'moderate', label: 'Moderada 🌿', color: 'bg-orange-100 text-orange-800' },
+    { value: 'severe', label: 'Severa 🍂', color: 'bg-red-100 text-red-800' },
+  ];
+
+  const digestionOptions = [
+    { value: 'excellent', label: 'Excelente 😋', color: 'bg-green-100 text-green-800' },
+    { value: 'good', label: 'Buena 😊', color: 'bg-blue-100 text-blue-800' },
+    { value: 'bloating', label: 'Hinchazón 🎈', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'indigestion', label: 'Indigestión 🤢', color: 'bg-orange-100 text-orange-800' },
+    { value: 'nausea', label: 'Náuseas 🤮', color: 'bg-red-100 text-red-800' },
+  ];
+
+  const headacheOptions = [
+    { value: 'none', label: 'Ninguno ✅', color: 'bg-green-100 text-green-800' },
+    { value: 'mild', label: 'Leve 😣', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'moderate', label: 'Moderado 😖', color: 'bg-orange-100 text-orange-800' },
+    { value: 'severe', label: 'Severo 😫', color: 'bg-red-100 text-red-800' },
+    { value: 'migraine', label: 'Migraña 🤯', color: 'bg-purple-100 text-purple-800' },
+  ];
+
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -90,6 +166,27 @@ const ManSymptoms = () => {
       case 'headache': return 'Dolor de cabeza';
       default: return category;
     }
+  };
+
+  const getSymptomDisplay = (category, value) => {
+    if (!value) return null;
+    
+    let options;
+    switch (category) {
+      case 'mood': options = moodOptions; break;
+      case 'libido': options = libidoOptions; break;
+      case 'cravings': options = cravingsOptions; break;
+      case 'energy': options = energyOptions; break;
+      case 'sleep': options = sleepOptions; break;
+      case 'pain': options = painOptions; break;
+      case 'skin': options = skinOptions; break;
+      case 'digestion': options = digestionOptions; break;
+      case 'headache': options = headacheOptions; break;
+      default: return null;
+    }
+    
+    const option = options.find(opt => opt.value === value);
+    return option || null;
   };
 
   if (loading) {
@@ -170,28 +267,225 @@ const ManSymptoms = () => {
               Síntomas del {format(selectedDate, "d 'de' MMMM", { locale: es })}
             </h2>
 
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(symptoms).map(([key, value]) => {
-                if (key === 'notes') return null;
-                const Icon = getSymptomIcon(key);
-                return (
-                  <div key={key} className="bg-gray-50 rounded-xl p-4">
-                    <div className="flex items-center mb-2">
-                      <Icon className="text-blue-500 mr-2" size={18} />
-                      <span className="text-sm font-medium text-gray-700">
-                        {getSymptomLabel(key)}
-                      </span>
+            {/* Estado de ánimo */}
+            {symptoms.mood && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Smile className="text-pink-500 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Estado de ánimo</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {moodOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`p-3 rounded-xl font-medium ${
+                        symptoms.mood === option.value
+                          ? option.color
+                          : 'bg-gray-50 text-gray-400'
+                      }`}
+                    >
+                      {option.label}
                     </div>
-                    <p className="text-lg font-semibold text-gray-900">
-                      {value || 'No registrado'}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
+            {/* Libido */}
+            {symptoms.libido && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Flame className="text-pink-500 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Libido</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {libidoOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`p-3 rounded-xl font-medium ${
+                        symptoms.libido === option.value
+                          ? option.color
+                          : 'bg-gray-50 text-gray-400'
+                      }`}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Antojos */}
+            {symptoms.cravings && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Utensils className="text-pink-500 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Antojos</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {cravingsOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`p-3 rounded-xl font-medium ${
+                        symptoms.cravings === option.value
+                          ? option.color
+                          : 'bg-gray-50 text-gray-400'
+                      }`}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Energía */}
+            {symptoms.energy && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Zap className="text-pink-500 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Energía</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {energyOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`p-3 rounded-xl font-medium ${
+                        symptoms.energy === option.value
+                          ? option.color
+                          : 'bg-gray-50 text-gray-400'
+                      }`}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sueño */}
+            {symptoms.sleep && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Moon className="text-pink-500 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Sueño</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {sleepOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`p-3 rounded-xl font-medium ${
+                        symptoms.sleep === option.value
+                          ? option.color
+                          : 'bg-gray-50 text-gray-400'
+                      }`}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Dolor */}
+            {symptoms.pain && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <AlertCircle className="text-pink-500 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Dolor</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {painOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`p-3 rounded-xl font-medium ${
+                        symptoms.pain === option.value
+                          ? option.color
+                          : 'bg-gray-50 text-gray-400'
+                      }`}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Piel */}
+            {symptoms.skin && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Droplet className="text-pink-500 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Piel</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {skinOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`p-3 rounded-xl font-medium ${
+                        symptoms.skin === option.value
+                          ? option.color
+                          : 'bg-gray-50 text-gray-400'
+                      }`}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Digestión */}
+            {symptoms.digestion && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Coffee className="text-pink-500 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Digestión</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {digestionOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`p-3 rounded-xl font-medium ${
+                        symptoms.digestion === option.value
+                          ? option.color
+                          : 'bg-gray-50 text-gray-400'
+                      }`}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Dolor de cabeza */}
+            {symptoms.headache && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Headphones className="text-pink-500 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Dolor de cabeza</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {headacheOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`p-3 rounded-xl font-medium ${
+                        symptoms.headache === option.value
+                          ? option.color
+                          : 'bg-gray-50 text-gray-400'
+                      }`}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Notas */}
             {symptoms.notes && (
-              <div className="mt-4 bg-blue-50 rounded-xl p-4">
+              <div className="mt-4 bg-pink-50 rounded-xl p-4">
                 <h3 className="font-medium text-gray-900 mb-2 flex items-center">
                   <Heart className="mr-2 text-pink-500" size={16} />
                   Notas

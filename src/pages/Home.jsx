@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Droplets, Heart, Plus } from 'lucide-react';
-import { getProfile } from '../utils/storage';
+import { getProfile, parseLocalDate } from '../utils/storage';
 import { 
   getCyclePhase, 
   getPhaseInfo, 
@@ -32,7 +32,7 @@ const Home = () => {
         setProfile(savedProfile);
         
         const today = new Date();
-        const lastPeriodStart = new Date(savedProfile.lastPeriodStart);
+        const lastPeriodStart = parseLocalDate(savedProfile.lastPeriodStart);
         
         const phase = getCyclePhase(
           today,
@@ -75,57 +75,6 @@ const Home = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Fase actual */}
-        {phaseInfo && (
-          <div className={`${phaseInfo.color} rounded-2xl p-6 text-white shadow-lg`}>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-4xl">{phaseInfo.icon}</span>
-              <div className="text-right">
-                <p className="text-sm opacity-90">Fase actual</p>
-                <p className="text-2xl font-bold">{phaseInfo.name}</p>
-              </div>
-            </div>
-            <p className="text-sm opacity-90 mb-4">{phaseInfo.description}</p>
-            <div className="bg-white/20 rounded-xl p-3">
-              <p className="text-xs font-semibold mb-2">💡 Tips para hoy:</p>
-              <ul className="text-xs space-y-1">
-                {phaseInfo.tips.map((tip, index) => (
-                  <li key={index}>• {tip}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-
-        {/* Contadores */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center mb-3">
-              <Calendar className="text-pink-500 mr-2" size={20} />
-              <p className="text-sm text-gray-600">Próximo periodo</p>
-            </div>
-            <p className="text-3xl font-bold text-gray-900">
-              {daysUntilPeriod > 0 ? daysUntilPeriod : '¡Hoy!'}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              {daysUntilPeriod > 0 ? 'días restantes' : 'día del periodo'}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center mb-3">
-              <Droplets className="text-purple-500 mr-2" size={20} />
-              <p className="text-sm text-gray-600">Ovulación</p>
-            </div>
-            <p className="text-3xl font-bold text-gray-900">
-              {daysUntilOvulation > 0 ? daysUntilOvulation : '¡Hoy!'}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              {daysUntilOvulation > 0 ? 'días restantes' : 'día de ovulación'}
-            </p>
-          </div>
-        </div>
-
         {/* Círculo de fases del ciclo */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">Fases del ciclo</h3>
@@ -279,7 +228,7 @@ const Home = () => {
                             y1={y1}
                             x2={x2}
                             y2={y2}
-                            stroke="#ffffff"
+                            stroke="#e5e7eb"
                             strokeWidth="0.5"
                             opacity="0.5"
                           />
@@ -348,6 +297,57 @@ const Home = () => {
               <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
               <span className="text-sm text-gray-700">Lútea 14d</span>
             </div>
+          </div>
+        </div>
+
+        {/* Fase actual */}
+        {phaseInfo && (
+          <div className={`${phaseInfo.color} rounded-2xl p-6 text-white shadow-lg`}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-4xl">{phaseInfo.icon}</span>
+              <div className="text-right">
+                <p className="text-sm opacity-90">Fase actual</p>
+                <p className="text-2xl font-bold">{phaseInfo.name}</p>
+              </div>
+            </div>
+            <p className="text-sm opacity-90 mb-4">{phaseInfo.description}</p>
+            <div className="bg-white/20 rounded-xl p-3">
+              <p className="text-xs font-semibold mb-2">💡 Tips para hoy:</p>
+              <ul className="text-xs space-y-1">
+                {phaseInfo.tips.map((tip, index) => (
+                  <li key={index}>• {tip}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Contadores */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center mb-3">
+              <Calendar className="text-pink-500 mr-2" size={20} />
+              <p className="text-sm text-gray-600">Próximo periodo</p>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {daysUntilPeriod > 0 ? daysUntilPeriod : '¡Hoy!'}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {daysUntilPeriod > 0 ? 'días restantes' : 'día del periodo'}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center mb-3">
+              <Droplets className="text-purple-500 mr-2" size={20} />
+              <p className="text-sm text-gray-600">Ovulación</p>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {daysUntilOvulation > 0 ? daysUntilOvulation : '¡Hoy!'}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {daysUntilOvulation > 0 ? 'días restantes' : 'día de ovulación'}
+            </p>
           </div>
         </div>
       </div>

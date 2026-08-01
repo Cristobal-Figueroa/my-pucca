@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Calendar, Droplets, Lightbulb, User, RefreshCw, Activity } from 'lucide-react';
-import { getProfile, getPartnerProfile } from '../utils/storage';
-import { getCyclePhase, CYCLE_PHASES } from '../utils/cycleCalculations';
+import { getProfile, getPartnerProfile, parseLocalDate } from '../utils/storage';
+import { getCyclePhase, CYCLE_PHASES, getPhaseInfo, getDaysUntilNextPeriod, getDaysUntilOvulation } from '../utils/cycleCalculations';
 import { differenceInDays } from 'date-fns';
 import Layout from '../components/Layout';
 
@@ -37,25 +37,22 @@ const ManHome = () => {
               const today = new Date();
               const phase = getCyclePhase(
                 today,
-                new Date(partnerProfile.last_period_start),
+                parseLocalDate(partnerProfile.last_period_start),
                 partnerProfile.cycle_length,
                 partnerProfile.period_length
               );
               setCurrentPhase(phase);
               
               // Calcular día del ciclo
-              const daysSinceLastPeriod = differenceInDays(today, new Date(partnerProfile.last_period_start));
+              const daysSinceLastPeriod = differenceInDays(today, parseLocalDate(partnerProfile.last_period_start));
               const currentCycleDay = ((daysSinceLastPeriod % partnerProfile.cycle_length) + partnerProfile.cycle_length) % partnerProfile.cycle_length;
               setCycleDay(currentCycleDay + 1);
               
-              // Calcular días hasta periodo
-              const daysInCycle = partnerProfile.cycle_length;
-              const daysUntilPeriodCalc = daysInCycle - currentCycleDay;
+              // Calcular días hasta periodo y ovulación (siempre la próxima)
+              const daysUntilPeriodCalc = getDaysUntilNextPeriod(parseLocalDate(partnerProfile.last_period_start), partnerProfile.cycle_length);
               setDaysUntilPeriod(daysUntilPeriodCalc);
               
-              // Calcular días hasta ovulación (cicloLength - 14)
-              const ovulationDayIndex = partnerProfile.cycle_length - 14;
-              const daysUntilOvulationCalc = ovulationDayIndex - currentCycleDay;
+              const daysUntilOvulationCalc = getDaysUntilOvulation(parseLocalDate(partnerProfile.last_period_start), partnerProfile.cycle_length);
               setDaysUntilOvulation(daysUntilOvulationCalc);
             } else {
               // Si no se encuentra la pareja, mostrar error
@@ -126,35 +123,6 @@ const ManHome = () => {
     );
   }
 
-  const getPhaseColor = (phase) => {
-    switch (phase) {
-      case CYCLE_PHASES.MENSTRUATION:
-        return 'bg-red-500';
-      case CYCLE_PHASES.FOLLICULAR:
-        return 'bg-green-500';
-      case CYCLE_PHASES.OVULATION:
-        return 'bg-purple-500';
-      case CYCLE_PHASES.LUTEAL:
-        return 'bg-yellow-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
-
-  const getPhaseName = (phase) => {
-    switch (phase) {
-      case CYCLE_PHASES.MENSTRUATION:
-        return 'Menstruación';
-      case CYCLE_PHASES.FOLLICULAR:
-        return 'Fase Folicular';
-      case CYCLE_PHASES.OVULATION:
-        return 'Ovulación';
-      case CYCLE_PHASES.LUTEAL:
-        return 'Fase Lútea';
-      default:
-        return 'Desconocido';
-    }
-  };
 
   const cycleLength = partnerData.cycle_length;
   const periodLength = partnerData.period_length;
@@ -165,9 +133,62 @@ const ManHome = () => {
   const ovulationPercent = (1 / cycleLength) * 100;
   const lutealPercent = ((cycleLength - ovulationDayIndex - 1) / cycleLength) * 100;
 
+  const phaseInfo = currentPhase ? getPhaseInfo(currentPhase) : null;
+
   return (
     <Layout title={`Hola, ${profile.name}`} showBackButton={false} showSettings={true}>
       <div className="space-y-6">
+        {/* Fase actual */}
+        {phaseInfo && (
+          <div className={`${phaseInfo.color} rounded-2xl p-6 text-white shadow-lg`}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-4xl">{phaseInfo.icon}</span>
+              <div className="text-right">
+                <p className="text-sm opacity-90">Fase actual de {partnerData.name}</p>
+                <p className="text-2xl font-bold">{phaseInfo.name}</p>
+              </div>
+            </div>
+            <p className="text-sm opacity-90 mb-4">{phaseInfo.description}</p>
+            <div className="bg-white/20 rounded-xl p-3">
+              <p className="text-xs font-semibold mb-2">💡 Tips para hoy:</p>
+              <ul className="text-xs space-y-1">
+                {phaseInfo.tips.map((tip, index) => (
+                  <li key={index}>• {tip}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Contadores */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center mb-3">
+              <Calendar className="text-pink-500 mr-2" size={20} />
+              <p className="text-sm text-gray-600">Próximo periodo</p>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {daysUntilPeriod > 0 ? daysUntilPeriod : '¡Hoy!'}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {daysUntilPeriod > 0 ? 'días restantes' : 'día del periodo'}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center mb-3">
+              <Droplets className="text-purple-500 mr-2" size={20} />
+              <p className="text-sm text-gray-600">Ovulación</p>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {daysUntilOvulation > 0 ? daysUntilOvulation : '¡Hoy!'}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {daysUntilOvulation > 0 ? 'días restantes' : 'día de ovulación'}
+            </p>
+          </div>
+        </div>
+
         {/* Círculo del ciclo de la pareja */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">Fases del ciclo de {partnerData.name}</h3>
@@ -316,7 +337,7 @@ const ManHome = () => {
                             y1={y1}
                             x2={x2}
                             y2={y2}
-                            stroke="#ffffff"
+                            stroke="#e5e7eb"
                             strokeWidth="0.5"
                             opacity="0.5"
                           />
@@ -386,60 +407,6 @@ const ManHome = () => {
               <span className="text-sm text-gray-700">Lútea 14d</span>
             </div>
           </div>
-        </div>
-
-        {/* Tarjeta principal - Fase actual */}
-        <div className={`bg-gradient-to-r ${getPhaseColor(currentPhase)} rounded-3xl p-6 text-white shadow-lg`}>
-          <div className="flex items-center justify-between mb-4">
-            <Heart size={32} />
-            <span className="text-sm bg-white/20 px-3 py-1 rounded-full">
-              Hoy
-            </span>
-          </div>
-          <h2 className="text-2xl font-bold mb-2">
-            {getPhaseName(currentPhase)}
-          </h2>
-          <p className="text-white/80 mb-4">
-            Día {cycleDay} del ciclo
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white/20 rounded-xl p-3">
-              <p className="text-xs text-white/80">Faltan para periodo</p>
-              <p className="text-2xl font-bold">{daysUntilPeriod}d</p>
-            </div>
-            <div className="bg-white/20 rounded-xl p-3">
-              <p className="text-xs text-white/80">Faltan para ovulación</p>
-              <p className="text-2xl font-bold">{daysUntilOvulation}d</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Acciones rápidas */}
-        <div className="grid grid-cols-3 gap-4">
-          <button
-            onClick={() => navigate('/man-calendar')}
-            className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <Calendar className="text-blue-500 mb-2" size={28} />
-            <h3 className="font-semibold text-gray-900 text-sm">Calendario</h3>
-            <p className="text-xs text-gray-600">Ver ciclo</p>
-          </button>
-          <button
-            onClick={() => navigate('/man-symptoms')}
-            className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <Activity className="text-pink-500 mb-2" size={28} />
-            <h3 className="font-semibold text-gray-900 text-sm">Síntomas</h3>
-            <p className="text-xs text-gray-600">Ver estado</p>
-          </button>
-          <button
-            onClick={() => navigate('/man-tips')}
-            className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <Lightbulb className="text-yellow-500 mb-2" size={28} />
-            <h3 className="font-semibold text-gray-900 text-sm">Consejos</h3>
-            <p className="text-xs text-gray-600">Cómo apoyar</p>
-          </button>
         </div>
 
         {/* Información de apoyo */}
