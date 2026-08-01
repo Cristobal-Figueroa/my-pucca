@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Calendar as CalendarIcon, Smile, Flame, Utensils, Zap, Moon, AlertCircle, Droplet, Coffee, Headphones } from 'lucide-react';
-import { getProfile, getPartnerProfile, getPartnerSymptomsByDate } from '../utils/storage';
+import { getProfile, getPartnerProfile, getPartnerAllSymptoms } from '../utils/storage';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Layout from '../components/Layout';
@@ -12,6 +12,7 @@ const ManSymptoms = () => {
   const [partnerData, setPartnerData] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [symptoms, setSymptoms] = useState(null);
+  const [allPartnerSymptoms, setAllPartnerSymptoms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -94,19 +95,31 @@ const ManSymptoms = () => {
   useEffect(() => {
     const loadProfile = async () => {
       try {
+        console.log('Iniciando carga de perfil...');
         setLoading(true);
         setError(null);
         
         const savedProfile = await getProfile();
+        console.log('Perfil cargado:', savedProfile);
+        
         if (savedProfile && savedProfile.gender === 'man') {
           setProfile(savedProfile);
           
           // Cargar datos reales de la pareja usando el partnerCode
           if (savedProfile.partnerCode) {
+            console.log('Cargando perfil de pareja con código:', savedProfile.partnerCode);
             const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+            console.log('Perfil de pareja:', partnerProfile);
+            
             if (partnerProfile) {
               setPartnerData(partnerProfile);
-              await loadSymptoms(selectedDate);
+              // Cargar todos los síntomas de la pareja
+              console.log('Cargando todos los síntomas de la pareja...');
+              const allSymptoms = await getPartnerAllSymptoms(savedProfile.partnerCode);
+              console.log('Síntomas de la pareja:', allSymptoms);
+              setAllPartnerSymptoms(allSymptoms);
+              // Filtrar síntomas del día actual
+              filterSymptomsByDate(selectedDate, allSymptoms);
             } else {
               setError('No se encontró el perfil de tu pareja. Verifica el código.');
               setPartnerData(null);
@@ -121,22 +134,33 @@ const ManSymptoms = () => {
         console.error('Error loading profile:', err);
         setError('Error al cargar los datos. Intenta nuevamente.');
       } finally {
+        console.log('Carga finalizada, setLoading(false)');
         setLoading(false);
       }
     };
     loadProfile();
+  }, []);
+
+  // Filtrar síntomas cuando cambie la fecha seleccionada
+  useEffect(() => {
+    if (allPartnerSymptoms.length > 0) {
+      filterSymptomsByDate(selectedDate, allPartnerSymptoms);
+    }
   }, [selectedDate]);
 
-  const loadSymptoms = async (date) => {
-    if (!profile || !profile.partnerCode) return;
+  const filterSymptomsByDate = (date, symptomsList) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
     
-    const partnerSymptoms = await getPartnerSymptomsByDate(profile.partnerCode, date);
-    if (partnerSymptoms) {
-      setSymptoms(partnerSymptoms);
-    } else {
-      setSymptoms(null);
-    }
+    const symptomForDate = symptomsList.find(s => s.date === dateStr);
+    setSymptoms(symptomForDate || null);
   };
+
+  // Debug: mostrar síntomas cargados
+  console.log('Síntomas cargados:', allPartnerSymptoms);
+  console.log('Síntoma actual:', symptoms);
 
   const getSymptomIcon = (category) => {
     switch (category) {

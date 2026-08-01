@@ -19,6 +19,7 @@ export const API_ENDPOINTS = {
   SAVE_SYMPTOMS_BULK: '/save_symptoms_bulk.php',
   GET_SYMPTOMS: '/get_symptoms.php',
   GET_PARTNER_SYMPTOMS: '/get_partner_symptoms.php',
+  GET_PARTNER_ALL_SYMPTOMS: '/get_partner_all_symptoms.php',
   
   // Sincronización de pareja
   PARTNER_SYNC: '/partner_sync.php',

@@ -367,7 +367,12 @@ export const getPartnerProfile = async (partnerCode) => {
 // Obtener síntomas de la pareja por fecha
 export const getPartnerSymptomsByDate = async (partnerCode, date) => {
   try {
-    const dateStr = date.toISOString().split('T')[0];
+    // Usar fecha local para evitar problemas de zona horaria
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
     const response = await apiRequest(`${API_ENDPOINTS.GET_PARTNER_SYMPTOMS}?partner_code=${partnerCode}&date=${dateStr}`);
     if (response.success && response.symptom) {
       return response.symptom;
@@ -376,6 +381,27 @@ export const getPartnerSymptomsByDate = async (partnerCode, date) => {
   } catch (error) {
     console.error('Error getting partner symptoms:', error);
     return null;
+  }
+};
+
+// Obtener todos los síntomas de la pareja
+export const getPartnerAllSymptoms = async (partnerCode) => {
+  try {
+    // Primero obtener el user_id de la pareja
+    const partnerProfile = await getPartnerProfile(partnerCode);
+    if (!partnerProfile || !partnerProfile.user_id) {
+      return [];
+    }
+
+    // Usar el endpoint existente get_symptoms con el user_id de la pareja
+    const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${partnerProfile.user_id}`);
+    if (response.success && response.symptoms) {
+      return response.symptoms;
+    }
+    return [];
+  } catch (error) {
+    console.error('Error getting all partner symptoms:', error);
+    return [];
   }
 };
 
