@@ -143,36 +143,6 @@ const Calendar = () => {
             <ChevronRight size={24} className="text-gray-600" />
           </button>
         </div>
-        {/* Leyenda */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Leyenda</h3>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-red-100 rounded mr-2"></div>
-              <span>Menstruación</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-green-100 rounded mr-2"></div>
-              <span>Fase folicular</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-purple-500 rounded mr-2"></div>
-              <span>Ovulación</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-purple-200 rounded mr-2"></div>
-              <span>Ventana fértil</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-yellow-100 rounded mr-2"></div>
-              <span>Fase lútea</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-red-200 rounded mr-2"></div>
-              <span>Periodo previsto</span>
-            </div>
-          </div>
-        </div>
 
         {/* Calendario */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
@@ -208,6 +178,37 @@ const Calendar = () => {
                 <span className="text-xs">{getDayLabel(dayData)}</span>
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Leyenda */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Leyenda</h3>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-red-100 rounded mr-2"></div>
+              <span>Menstruación</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-green-100 rounded mr-2"></div>
+              <span>Fase folicular</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-purple-500 rounded mr-2"></div>
+              <span>Ovulación</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-purple-200 rounded mr-2"></div>
+              <span>Ventana fértil</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-yellow-100 rounded mr-2"></div>
+              <span>Fase lútea</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-red-200 rounded mr-2"></div>
+              <span>Periodo previsto</span>
+            </div>
           </div>
         </div>
 
