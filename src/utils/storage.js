@@ -409,6 +409,7 @@ export const getPartnerAllSymptoms = async (partnerCode) => {
 export const clearAllData = () => {
   try {
     localStorage.removeItem(STORAGE_KEYS.PROFILE);
+    localStorage.removeItem(STORAGE_KEYS.USER_ID);
     localStorage.removeItem(STORAGE_KEYS.PERIODS);
     localStorage.removeItem(STORAGE_KEYS.SYMPTOMS);
     return true;
