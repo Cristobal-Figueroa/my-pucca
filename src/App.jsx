@@ -5,6 +5,7 @@ import Ovulation from './pages/Ovulation';
 import Symptoms from './pages/Symptoms';
 import Settings from './pages/Settings';
 import Partner from './pages/Partner';
+import Tips from './pages/Tips';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/symptoms" element={<Symptoms />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/partner" element={<Partner />} />
+      <Route path="/tips" element={<Tips />} />
     </Routes>
   );
 }

@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings, ArrowLeft } from 'lucide-react';
+import { Settings, ArrowLeft, Lightbulb } from 'lucide-react';
 import { getProfile } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -21,6 +21,10 @@ const Header = ({ title, showBackButton = false, showSettings = true }) => {
 
   const handleSettings = () => {
     navigate('/settings');
+  };
+
+  const handleTips = () => {
+    navigate('/tips');
   };
 
   return (
@@ -52,14 +56,22 @@ const Header = ({ title, showBackButton = false, showSettings = true }) => {
             </div>
           )}
 
-          {showSettings && (
+          <div className="flex items-center space-x-2">
             <button
-              onClick={handleSettings}
+              onClick={handleTips}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <Settings className="text-gray-600" size={24} />
+              <Lightbulb className="text-amber-500" size={24} />
             </button>
-          )}
+            {showSettings && (
+              <button
+                onClick={handleSettings}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <Settings className="text-gray-600" size={24} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
