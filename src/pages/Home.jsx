@@ -119,62 +119,226 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Acciones rápidas */}
+        {/* Círculo de fases del ciclo */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Acciones rápidas</h3>
-          <div className="space-y-3">
-            <button
-              onClick={() => navigate('/calendar')}
-              className="w-full flex items-center justify-between p-4 bg-pink-50 rounded-xl hover:bg-pink-100 transition-colors"
-            >
-              <div className="flex items-center">
-                <Calendar className="text-pink-500 mr-3" size={20} />
-                <span className="font-medium text-gray-900">Ver calendario</span>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">Fases del ciclo</h3>
+          <div className="relative w-80 h-80 mx-auto">
+            {/* Círculo base con proporciones reales */}
+            <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+              {(() => {
+                const circumference = 2 * Math.PI * 38; // ~238.76
+                const periodLength = profile.periodLength; // días de menstruación
+                const ovulationDay = profile.cycleLength - 14;
+                const fertileStart = ovulationDay - 5;
+                const fertileEnd = ovulationDay + 1;
+                
+                // Calcular proporciones reales según configuración (coincidiendo con getCyclePhase)
+                const menstruationPercent = periodLength / profile.cycleLength;
+                const fertileWindowDays = fertileEnd - fertileStart; // 6 días de ventana fértil
+                const ovulationPercent = fertileWindowDays / profile.cycleLength; // ventana fértil completa
+                const lutealPercent = 14 / profile.cycleLength; // ~14 días fase lútea (después de ovulación)
+                const follicularPercent = 1 - menstruationPercent - ovulationPercent - lutealPercent;
+                
+                const menstruationLength = circumference * menstruationPercent;
+                const follicularLength = circumference * follicularPercent;
+                const ovulationLength = circumference * ovulationPercent;
+                const lutealLength = circumference * lutealPercent;
+                
+                const menstruationOffset = 0;
+                const follicularOffset = -menstruationLength;
+                const ovulationOffset = -(menstruationLength + follicularLength);
+                const lutealOffset = -(menstruationLength + follicularLength + ovulationLength);
+                
+                // Líneas divisorias internas (para separar)
+                const innerRadius = 32; // borde interno del círculo de colores
+                const outerRadius = 44; // borde externo del círculo de colores (líneas más cortas)
+                const textRadius = 38; // radio para los números (entre líneas)
+                
+                // Calcular día actual usando la misma lógica que cycleCalculations.js
+                const today = new Date();
+                const lastPeriodStart = new Date(profile.lastPeriodStart);
+                const daysSinceLastPeriod = Math.floor((today - lastPeriodStart) / (1000 * 60 * 60 * 24));
+                const zeroIndexedDay = daysSinceLastPeriod % profile.cycleLength; // 0-indexed (0-27)
+                const currentDay = zeroIndexedDay + 1; // 1-indexed (1-28)
+                
+                // Calcular el segmento del día actual
+                const daySegmentLength = circumference / profile.cycleLength;
+                const daySegmentOffset = -(zeroIndexedDay * daySegmentLength);
+                
+                // Color del día actual (rosa fijo)
+                const currentDayColor = '#ec4899';
+                
+                return (
+                  <>
+                    {/* Círculos de colores (base) con transparencia */}
+                    {/* Menstruación */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="14"
+                      strokeDasharray={`${menstruationLength} ${circumference}`}
+                      strokeDashoffset={menstruationOffset}
+                      opacity="0.7"
+                    />
+                    {/* Folicular */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#22c55e"
+                      strokeWidth="14"
+                      strokeDasharray={`${follicularLength} ${circumference}`}
+                      strokeDashoffset={follicularOffset}
+                      opacity="0.7"
+                    />
+                    {/* Ovulación */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#a855f7"
+                      strokeWidth="14"
+                      strokeDasharray={`${ovulationLength} ${circumference}`}
+                      strokeDashoffset={ovulationOffset}
+                      opacity="0.7"
+                    />
+                    {/* Lútea */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#eab308"
+                      strokeWidth="14"
+                      strokeDasharray={`${lutealLength} ${circumference}`}
+                      strokeDashoffset={lutealOffset}
+                      opacity="0.7"
+                    />
+                    
+                    {/* Segmento del día actual (pintado completo) */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke={currentDayColor}
+                      strokeWidth="16"
+                      strokeDasharray={`${daySegmentLength} ${circumference}`}
+                      strokeDashoffset={daySegmentOffset}
+                    />
+                    
+                    {/* Líneas divisorias para cada día (ligeras y grises) */}
+                    {Array.from({ length: profile.cycleLength }).map((_, dayIndex) => {
+                      // Nota: el <svg> padre ya tiene "-rotate-90", por lo que aquí
+                      // NO restamos 90° extra (eso causaba un desfase de ~7 días
+                      // entre los números/líneas y los arcos de color).
+                      const angle = (dayIndex / profile.cycleLength) * 360;
+                      const radians = angle * (Math.PI / 180);
+                      const x1 = 50 + innerRadius * Math.cos(radians);
+                      const y1 = 50 + innerRadius * Math.sin(radians);
+                      const x2 = 50 + outerRadius * Math.cos(radians);
+                      const y2 = 50 + outerRadius * Math.sin(radians);
+                      
+                      // Posición del número (entre líneas)
+                      const midAngle = ((dayIndex + 0.5) / profile.cycleLength) * 360;
+                      const midRadians = midAngle * (Math.PI / 180);
+                      const textX = 50 + textRadius * Math.cos(midRadians);
+                      const textY = 50 + textRadius * Math.sin(midRadians);
+                      
+                      // Determinar si es el día actual (dayIndex es 0-indexed, zeroIndexedDay es 0-indexed)
+                      const isCurrentDay = dayIndex === zeroIndexedDay;
+                      
+                      // Color del número según fase
+                      let numberColor = '#ffffff';
+                      if (dayIndex < periodLength) {
+                        numberColor = '#fff1f2';
+                      } else if (dayIndex < (profile.cycleLength - 16)) {
+                        numberColor = '#f0fdf4';
+                      } else if (dayIndex >= (profile.cycleLength - 16) && dayIndex < (profile.cycleLength - 14)) {
+                        numberColor = '#faf5ff';
+                      } else {
+                        numberColor = '#fefce8';
+                      }
+                      
+                      return (
+                        <g key={dayIndex}>
+                          <line
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            stroke="#ffffff"
+                            strokeWidth="0.5"
+                            opacity="0.5"
+                          />
+                          {/* Número del día (entre líneas) */}
+                          <text
+                            x={textX}
+                            y={textY}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            fontSize="5"
+                            fontWeight={isCurrentDay ? "bold" : "normal"}
+                            fill={isCurrentDay ? "#ffffff" : numberColor}
+                            transform={`rotate(${midAngle} ${textX} ${textY})`}
+                          >
+                            {dayIndex + 1}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </>
+                );
+              })()}
+            </svg>
+            
+            {/* Centro con fase actual */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-3xl mb-1">
+                  {currentPhase === 'menstruation' ? '🩸' : 
+                   currentPhase === 'follicular' ? '🌱' : 
+                   currentPhase === 'ovulation' ? '🥚' : '🌙'}
+                </div>
+                <p className="text-xs font-semibold text-gray-700">
+                  {currentPhase === 'menstruation' ? 'Menstruación' : 
+                   currentPhase === 'follicular' ? 'Folicular' : 
+                   currentPhase === 'ovulation' ? 'Ovulación' : 'Lútea'}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Día {(() => {
+                    const today = new Date();
+                    const lastPeriodStart = new Date(profile.lastPeriodStart);
+                    const daysSinceLastPeriod = Math.floor((today - lastPeriodStart) / (1000 * 60 * 60 * 24));
+                    return (daysSinceLastPeriod % profile.cycleLength) + 1;
+                  })()} de {profile.cycleLength}
+                </p>
               </div>
-              <span className="text-pink-500">→</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/symptoms')}
-              className="w-full flex items-center justify-between p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors"
-            >
-              <div className="flex items-center">
-                <Heart className="text-purple-500 mr-3" size={20} />
-                <span className="font-medium text-gray-900">Registrar síntomas</span>
-              </div>
-              <span className="text-purple-500">→</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/ovulation')}
-              className="w-full flex items-center justify-between p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors"
-            >
-              <div className="flex items-center">
-                <Droplets className="text-green-500 mr-3" size={20} />
-                <span className="font-medium text-gray-900">Ventana fértil</span>
-              </div>
-              <span className="text-green-500">→</span>
-            </button>
+            </div>
           </div>
-        </div>
 
-        {/* Información del ciclo */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tu ciclo</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Duración del ciclo</span>
-              <span className="font-semibold text-gray-900">{profile.cycleLength} días</span>
+          {/* Leyenda con días */}
+          <div className="grid grid-cols-2 gap-3 mt-6">
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+              <span className="text-sm text-gray-700">Menstruación ({profile.periodLength}d)</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Duración del periodo</span>
-              <span className="font-semibold text-gray-900">{profile.periodLength} días</span>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+              <span className="text-sm text-gray-700">Folicular ({profile.cycleLength - profile.periodLength - 16}d)</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Último periodo</span>
-              <span className="font-semibold text-gray-900">
-                {format(new Date(profile.lastPeriodStart), 'dd/MM/yyyy', { locale: es })}
-              </span>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+              <span className="text-sm text-gray-700">Ovulación (2d)</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+              <span className="text-sm text-gray-700">Lútea (14d)</span>
             </div>
           </div>
         </div>
