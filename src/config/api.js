@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
   // Perfil
   SAVE_PROFILE: '/save_profile.php',
   GET_PROFILE: '/get_profile.php',
+  GET_PARTNER_PROFILE: '/get_partner_profile.php',
   
   // Periodos
   SAVE_PERIOD: '/save_period.php',
@@ -15,6 +16,7 @@ export const API_ENDPOINTS = {
   // Síntomas
   SAVE_SYMPTOM: '/save_symptom.php',
   GET_SYMPTOMS: '/get_symptoms.php',
+  GET_PARTNER_SYMPTOMS: '/get_partner_symptoms.php',
   
   // Sincronización de pareja
   PARTNER_SYNC: '/partner_sync.php',

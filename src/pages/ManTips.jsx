@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Lightbulb, Calendar, Droplets, Utensils, Sparkles } from 'lucide-react';
-import { getProfile } from '../utils/storage';
+import { getProfile, getPartnerProfile } from '../utils/storage';
 import { getCyclePhase, CYCLE_PHASES } from '../utils/cycleCalculations';
 import { differenceInDays } from 'date-fns';
-import ManLayout from '../components/ManLayout';
+import Layout from '../components/Layout';
 
 const ManTips = () => {
   const navigate = useNavigate();
@@ -17,27 +17,26 @@ const ManTips = () => {
       const savedProfile = await getProfile();
       if (savedProfile && savedProfile.gender === 'man') {
         setProfile(savedProfile);
-        // Simular datos de la pareja con fecha realista
-        const today = new Date();
-        const lastPeriodStart = new Date(today);
-        lastPeriodStart.setDate(today.getDate() - 8);
         
-        const simulatedPartner = {
-          name: 'Tu Pareja',
-          cycleLength: 28,
-          periodLength: 5,
-          lastPeriodStart: lastPeriodStart.toISOString().split('T')[0]
-        };
-        setPartnerData(simulatedPartner);
-        
-        // Calcular fase actual
-        const phase = getCyclePhase(
-          today,
-          new Date(simulatedPartner.lastPeriodStart),
-          simulatedPartner.cycleLength,
-          simulatedPartner.periodLength
-        );
-        setCurrentPhase(phase);
+        // Cargar datos reales de la pareja usando el partnerCode
+        if (savedProfile.partnerCode) {
+          const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+          if (partnerProfile) {
+            setPartnerData(partnerProfile);
+            
+            // Calcular fase actual
+            const today = new Date();
+            const phase = getCyclePhase(
+              today,
+              new Date(partnerProfile.last_period_start),
+              partnerProfile.cycle_length,
+              partnerProfile.period_length
+            );
+            setCurrentPhase(phase);
+          } else {
+            setPartnerData(null);
+          }
+        }
       } else {
         navigate('/');
       }
@@ -243,7 +242,7 @@ const ManTips = () => {
   const currentTips = tipsByPhase[currentPhase];
 
   return (
-    <ManLayout title="Consejos" showBackButton={true}>
+    <Layout title="Consejos" showBackButton={true} showSettings={false}>
       <div className="space-y-6">
             {/* Hero Section */}
             <div className={`bg-gradient-to-r ${currentTips.color} rounded-3xl p-6 text-white shadow-lg`}>
@@ -301,7 +300,7 @@ const ManTips = () => {
               </div>
             </div>
           </div>
-        </ManLayout>
+        </Layout>
       );
     }
 

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar as CalendarIcon, Heart } from 'lucide-react';
-import { getProfile } from '../utils/storage';
+import { getProfile, getPartnerProfile } from '../utils/storage';
 import { getCyclePhase, CYCLE_PHASES } from '../utils/cycleCalculations';
 import { differenceInDays, startOfMonth, endOfMonth, eachDayOfInterval, format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import ManLayout from '../components/ManLayout';
+import Layout from '../components/Layout';
 
 const ManCalendar = () => {
   const navigate = useNavigate();
@@ -19,19 +19,38 @@ const ManCalendar = () => {
       const savedProfile = await getProfile();
       if (savedProfile && savedProfile.gender === 'man') {
         setProfile(savedProfile);
-        // Simular datos de la pareja con fecha realista
-        const today = new Date();
-        const lastPeriodStart = new Date(today);
-        lastPeriodStart.setDate(today.getDate() - 8);
         
-        const simulatedPartner = {
-          name: 'Tu Pareja',
-          cycleLength: 28,
-          periodLength: 5,
-          lastPeriodStart: lastPeriodStart.toISOString().split('T')[0]
-        };
-        setPartnerData(simulatedPartner);
-        generateCalendar(simulatedPartner, currentDate);
+        // Cargar datos reales de la pareja usando el partnerCode
+        if (savedProfile.partnerCode) {
+          try {
+            const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+            if (partnerProfile) {
+              setPartnerData(partnerProfile);
+              generateCalendar(partnerProfile, currentDate);
+            } else {
+              // Usar datos simulados si no se encuentra
+              const simulatedPartner = {
+                name: 'Tu Pareja',
+                cycle_length: 28,
+                period_length: 5,
+                last_period_start: new Date().toISOString().split('T')[0]
+              };
+              setPartnerData(simulatedPartner);
+              generateCalendar(simulatedPartner, currentDate);
+            }
+          } catch (error) {
+            console.error('Error loading partner profile:', error);
+            // Usar datos simulados en caso de error
+            const simulatedPartner = {
+              name: 'Tu Pareja',
+              cycle_length: 28,
+              period_length: 5,
+              last_period_start: new Date().toISOString().split('T')[0]
+            };
+            setPartnerData(simulatedPartner);
+            generateCalendar(simulatedPartner, currentDate);
+          }
+        }
       } else {
         navigate('/');
       }
@@ -43,12 +62,17 @@ const ManCalendar = () => {
     const monthStart = startOfMonth(date);
     const monthEnd = endOfMonth(date);
     const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
-    const daysWithPhases = days.map(day => {
-      const lastPeriodStart = new Date(partner.lastPeriodStart);
-      const phase = getCyclePhase(day, lastPeriodStart, partner.cycleLength, partner.periodLength);
-      const daysSinceLastPeriod = differenceInDays(day, lastPeriodStart);
-      const cycleDay = ((daysSinceLastPeriod % partner.cycleLength) + partner.cycleLength) % partner.cycleLength;
+    
+    const calendarDaysWithPhases = days.map(day => {
+      const phase = getCyclePhase(
+        day,
+        new Date(partner.last_period_start),
+        partner.cycle_length,
+        partner.period_length
+      );
+      
+      const daysSinceLastPeriod = differenceInDays(day, new Date(partner.last_period_start));
+      const cycleDay = ((daysSinceLastPeriod % partner.cycle_length) + partner.cycle_length) % partner.cycle_length;
       
       return {
         date: day,
@@ -57,8 +81,8 @@ const ManCalendar = () => {
         isToday: isSameDay(day, new Date())
       };
     });
-
-    setCalendarDays(daysWithPhases);
+    
+    setCalendarDays(calendarDaysWithPhases);
   };
 
   const getPhaseColor = (phase) => {
@@ -98,7 +122,7 @@ const ManCalendar = () => {
   const monthName = format(currentDate, 'MMMM yyyy', { locale: es });
 
   return (
-    <ManLayout title="Calendario" showBackButton={true}>
+    <Layout title="Calendario" showBackButton={true} showSettings={false}>
       <div className="space-y-4">
         {/* Header del calendario */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
@@ -195,7 +219,7 @@ const ManCalendar = () => {
           </p>
         </div>
       </div>
-    </ManLayout>
+    </Layout>
   );
 };
 

@@ -241,6 +241,35 @@ export const getSymptomsByDate = async (date) => {
   }
 };
 
+// Obtener perfil de la pareja por código
+export const getPartnerProfile = async (partnerCode) => {
+  try {
+    const response = await apiRequest(`${API_ENDPOINTS.GET_PARTNER_PROFILE}?partner_code=${partnerCode}`);
+    if (response.success && response.profile) {
+      return response.profile;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting partner profile:', error);
+    return null;
+  }
+};
+
+// Obtener síntomas de la pareja por fecha
+export const getPartnerSymptomsByDate = async (partnerCode, date) => {
+  try {
+    const dateStr = date.toISOString().split('T')[0];
+    const response = await apiRequest(`${API_ENDPOINTS.GET_PARTNER_SYMPTOMS}?partner_code=${partnerCode}&date=${dateStr}`);
+    if (response.success && response.symptom) {
+      return response.symptom;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting partner symptoms:', error);
+    return null;
+  }
+};
+
 // Limpiar todos los datos
 export const clearAllData = () => {
   try {

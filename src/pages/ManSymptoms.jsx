@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Calendar as CalendarIcon, Smile, Flame, Utensils, Zap, Moon, AlertCircle, Droplet, Coffee, Headphones } from 'lucide-react';
-import { getProfile } from '../utils/storage';
+import { getProfile, getPartnerProfile, getPartnerSymptomsByDate } from '../utils/storage';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import ManLayout from '../components/ManLayout';
+import Layout from '../components/Layout';
 
 const ManSymptoms = () => {
   const navigate = useNavigate();
@@ -18,12 +18,17 @@ const ManSymptoms = () => {
       const savedProfile = await getProfile();
       if (savedProfile && savedProfile.gender === 'man') {
         setProfile(savedProfile);
-        // Simular datos de la pareja
-        const simulatedPartner = {
-          name: 'Tu Pareja'
-        };
-        setPartnerData(simulatedPartner);
-        loadSymptoms(selectedDate);
+        
+        // Cargar datos reales de la pareja usando el partnerCode
+        if (savedProfile.partnerCode) {
+          const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+          if (partnerProfile) {
+            setPartnerData(partnerProfile);
+            loadSymptoms(selectedDate);
+          } else {
+            setPartnerData(null);
+          }
+        }
       } else {
         navigate('/');
       }
@@ -31,22 +36,15 @@ const ManSymptoms = () => {
     loadProfile();
   }, [selectedDate]);
 
-  const loadSymptoms = (date) => {
-    // Aquí se cargarían los síntomas del backend
-    // Por ahora, simulamos datos
-    const simulatedSymptoms = {
-      mood: 'Feliz',
-      libido: 'Alta',
-      cravings: 'Chocolate',
-      energy: 'Alta',
-      sleep: 'Bien',
-      pain: 'Ninguno',
-      skin: 'Normal',
-      digestion: 'Normal',
-      headache: 'Ninguno',
-      notes: 'Se siente muy bien hoy'
-    };
-    setSymptoms(simulatedSymptoms);
+  const loadSymptoms = async (date) => {
+    if (!profile || !profile.partnerCode) return;
+    
+    const partnerSymptoms = await getPartnerSymptomsByDate(profile.partnerCode, date);
+    if (partnerSymptoms) {
+      setSymptoms(partnerSymptoms);
+    } else {
+      setSymptoms(null);
+    }
   };
 
   const getSymptomIcon = (category) => {
@@ -84,7 +82,7 @@ const ManSymptoms = () => {
   }
 
   return (
-    <ManLayout title="Síntomas" showBackButton={true}>
+    <Layout title="Síntomas" showBackButton={true} showSettings={false}>
       <div className="space-y-6">
         {/* Selector de fecha */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
@@ -170,7 +168,7 @@ const ManSymptoms = () => {
           </p>
         </div>
       </div>
-    </ManLayout>
+    </Layout>
   );
 };
 

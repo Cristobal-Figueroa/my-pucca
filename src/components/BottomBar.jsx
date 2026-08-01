@@ -1,11 +1,28 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Calendar, Droplets, Heart, Users } from 'lucide-react';
+import { Home, Calendar, Droplets, Heart, Users, Activity, Lightbulb } from 'lucide-react';
+import { getProfile } from '../utils/storage';
+import { useState, useEffect } from 'react';
 
 const BottomBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMan, setIsMan] = useState(false);
 
-  const navItems = [
+  useEffect(() => {
+    const checkGender = async () => {
+      const profile = await getProfile();
+      setIsMan(profile && profile.gender === 'man');
+    };
+    checkGender();
+  }, []);
+
+  const navItems = isMan ? [
+    { path: '/man-home', icon: Home, label: 'Inicio' },
+    { path: '/man-calendar', icon: Calendar, label: 'Calendario' },
+    { path: '/man-symptoms', icon: Activity, label: 'Síntomas' },
+    { path: '/man-tips', icon: Lightbulb, label: 'Consejos' },
+    { path: '/partner', icon: Users, label: 'Pareja' },
+  ] : [
     { path: '/home', icon: Home, label: 'Inicio' },
     { path: '/calendar', icon: Calendar, label: 'Calendario' },
     { path: '/ovulation', icon: Droplets, label: 'Ovulación' },
