@@ -327,19 +327,19 @@ const Home = () => {
           <div className="grid grid-cols-2 gap-3 mt-6">
             <div className="flex items-center">
               <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-              <span className="text-sm text-gray-700">Menstruación ({profile.periodLength}d)</span>
+              <span className="text-sm text-gray-700">Menstruación {profile.periodLength}d</span>
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-              <span className="text-sm text-gray-700">Folicular ({profile.cycleLength - profile.periodLength - 14}d)</span>
+              <span className="text-sm text-gray-700">Folicular {profile.cycleLength - profile.periodLength - 14}d</span>
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-              <span className="text-sm text-gray-700">Ovulación (1d)</span>
+              <span className="text-sm text-gray-700">Ovulación 1d</span>
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-              <span className="text-sm text-gray-700">Lútea (14d)</span>
+              <span className="text-sm text-gray-700">Lútea 14d</span>
             </div>
           </div>
         </div>
