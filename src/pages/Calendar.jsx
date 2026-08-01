@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { getProfile, addPeriod, getPeriods } from '../utils/storage';
+import { getProfile, addPeriod, getPeriods, saveProfile } from '../utils/storage';
 import { generateCalendarData, CYCLE_PHASES } from '../utils/cycleCalculations';
 import { format, addMonths, subMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -68,6 +68,7 @@ const Calendar = () => {
         lastPeriodStart: newPeriod.date
       };
       setProfile(updatedProfile);
+      saveProfile(updatedProfile); // Guardar en storage para que actualice toda la app
       
       // Regenerar calendario
       generateCalendar(updatedProfile, currentDate);
@@ -75,6 +76,11 @@ const Calendar = () => {
       setShowAddPeriodModal(false);
       setModalMessage('Periodo registrado exitosamente');
       setShowModal(true);
+      
+      // Navegar a Home para forzar recarga de toda la app con el nuevo perfil
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
     }
   };
 

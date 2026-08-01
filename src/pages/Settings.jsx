@@ -40,6 +40,11 @@ const Settings = () => {
     saveProfile(profile);
     setModalMessage('¡Perfil guardado exitosamente!');
     setShowModal(true);
+    
+    // Navegar a Home para forzar recarga de toda la app con el nuevo perfil
+    setTimeout(() => {
+      navigate('/');
+    }, 1500);
   };
 
   const handleDeleteData = () => {
