@@ -1,0 +1,373 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Home, Heart, Smile, Flame, Utensils, Coffee, Trash2, Calendar } from 'lucide-react';
+import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom } from '../utils/storage';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import Modal from '../components/Modal';
+
+const Symptoms = () => {
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [symptoms, setSymptoms] = useState({
+    mood: '',
+    libido: '',
+    cravings: '',
+    energy: '',
+    notes: ''
+  });
+  const [savedSymptoms, setSavedSymptoms] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [symptomToDelete, setSymptomToDelete] = useState(null);
+
+  const moodOptions = [
+    { value: 'happy', label: 'Feliz 😊', color: 'bg-green-100 text-green-800' },
+    { value: 'sad', label: 'Triste 😢', color: 'bg-blue-100 text-blue-800' },
+    { value: 'anxious', label: 'Ansiosa 😰', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'irritable', label: 'Irritable 😤', color: 'bg-red-100 text-red-800' },
+    { value: 'tired', label: 'Cansada 😴', color: 'bg-purple-100 text-purple-800' },
+    { value: 'energetic', label: 'Energética ⚡', color: 'bg-orange-100 text-orange-800' },
+  ];
+
+  const libidoOptions = [
+    { value: 'high', label: 'Alta 🔥', color: 'bg-red-100 text-red-800' },
+    { value: 'medium', label: 'Media 💕', color: 'bg-pink-100 text-pink-800' },
+    { value: 'low', label: 'Baja 💤', color: 'bg-gray-100 text-gray-800' },
+  ];
+
+  const cravingsOptions = [
+    { value: 'sweet', label: 'Dulces 🍫', color: 'bg-amber-100 text-amber-800' },
+    { value: 'salty', label: 'Salados 🍟', color: 'bg-blue-100 text-blue-800' },
+    { value: 'spicy', label: 'Picantes 🌶️', color: 'bg-red-100 text-red-800' },
+    { value: 'none', label: 'Ninguno ✅', color: 'bg-green-100 text-green-800' },
+  ];
+
+  const energyOptions = [
+    { value: 'high', label: 'Alta ⚡', color: 'bg-green-100 text-green-800' },
+    { value: 'medium', label: 'Media 🔄', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'low', label: 'Baja 🪫', color: 'bg-red-100 text-red-800' },
+  ];
+
+  useEffect(() => {
+    const savedProfile = getProfile();
+    if (savedProfile) {
+      setProfile(savedProfile);
+      loadSymptomsForDate(selectedDate);
+    } else {
+      navigate('/settings');
+    }
+  }, [selectedDate]);
+
+  const loadSymptomsForDate = (date) => {
+    const symptomsForDate = getSymptomsByDate(new Date(date));
+    setSavedSymptoms(symptomsForDate);
+    
+    if (symptomsForDate.length > 0) {
+      const latestSymptom = symptomsForDate[symptomsForDate.length - 1];
+      setSymptoms({
+        mood: latestSymptom.mood || '',
+        libido: latestSymptom.libido || '',
+        cravings: latestSymptom.cravings || '',
+        energy: latestSymptom.energy || '',
+        notes: latestSymptom.notes || ''
+      });
+    } else {
+      setSymptoms({
+        mood: '',
+        libido: '',
+        cravings: '',
+        energy: '',
+        notes: ''
+      });
+    }
+  };
+
+  const handleSave = () => {
+    if (!symptoms.mood && !symptoms.libido && !symptoms.cravings && !symptoms.energy && !symptoms.notes) {
+      setModalMessage('Por favor selecciona al menos un síntoma');
+      setShowModal(true);
+      return;
+    }
+
+    const newSymptom = {
+      id: Date.now().toString(),
+      date: selectedDate,
+      mood: symptoms.mood,
+      libido: symptoms.libido,
+      cravings: symptoms.cravings,
+      energy: symptoms.energy,
+      notes: symptoms.notes,
+      timestamp: new Date().toISOString()
+    };
+
+    addSymptom(newSymptom);
+    loadSymptomsForDate(selectedDate);
+    
+    setModalMessage('¡Síntomas guardados exitosamente!');
+    setShowModal(true);
+  };
+
+  const handleDelete = (symptom) => {
+    setSymptomToDelete(symptom);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (symptomToDelete) {
+      deleteSymptom(symptomToDelete.id);
+      loadSymptomsForDate(selectedDate);
+      setShowDeleteModal(false);
+      setSymptomToDelete(null);
+      setModalMessage('Síntoma eliminado');
+      setShowModal(true);
+    }
+  };
+
+  if (!profile) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 pb-20">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-md mx-auto px-4 py-4">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+          >
+            <Home size={20} className="mr-2" />
+            Inicio
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900">Registrar Síntomas</h1>
+          <p className="text-gray-600 mt-1">Cómo te sientes hoy</p>
+        </div>
+      </div>
+
+      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+        {/* Selector de fecha */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Fecha
+          </label>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            onClick={(e) => e.target.showPicker?.()}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent cursor-pointer"
+          />
+        </div>
+
+        {/* Estado de ánimo */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Smile className="text-pink-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Estado de ánimo</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {moodOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setSymptoms({ ...symptoms, mood: option.value })}
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  symptoms.mood === option.value
+                    ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Gana sexual */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Flame className="text-red-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Gana sexual</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {libidoOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setSymptoms({ ...symptoms, libido: option.value })}
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  symptoms.libido === option.value
+                    ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Antojos */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Utensils className="text-orange-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Antojos</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {cravingsOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setSymptoms({ ...symptoms, cravings: option.value })}
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  symptoms.cravings === option.value
+                    ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Nivel de energía */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Coffee className="text-amber-600 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Nivel de energía</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {energyOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setSymptoms({ ...symptoms, energy: option.value })}
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  symptoms.energy === option.value
+                    ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Notas */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Notas adicionales
+          </label>
+          <textarea
+            value={symptoms.notes}
+            onChange={(e) => setSymptoms({ ...symptoms, notes: e.target.value })}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
+            rows={3}
+            placeholder="Agrega cualquier nota adicional..."
+          />
+        </div>
+
+        {/* Botón guardar */}
+        <button
+          onClick={handleSave}
+          className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+        >
+          <Heart size={20} />
+          <span>Guardar Síntomas</span>
+        </button>
+
+        {/* Síntomas guardados del día */}
+        {savedSymptoms.length > 0 && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Síntomas guardados hoy</h3>
+            <div className="space-y-3">
+              {savedSymptoms.map((symptom) => (
+                <div
+                  key={symptom.id}
+                  className="bg-gray-50 rounded-xl p-4 flex justify-between items-start"
+                >
+                  <div className="flex-1">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {symptom.mood && (
+                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                          {moodOptions.find(o => o.value === symptom.mood)?.label}
+                        </span>
+                      )}
+                      {symptom.libido && (
+                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                          {libidoOptions.find(o => o.value === symptom.libido)?.label}
+                        </span>
+                      )}
+                      {symptom.cravings && (
+                        <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs">
+                          {cravingsOptions.find(o => o.value === symptom.cravings)?.label}
+                        </span>
+                      )}
+                      {symptom.energy && (
+                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
+                          {energyOptions.find(o => o.value === symptom.energy)?.label}
+                        </span>
+                      )}
+                    </div>
+                    {symptom.notes && (
+                      <p className="text-sm text-gray-600">{symptom.notes}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleDelete(symptom)}
+                    className="p-2 hover:bg-red-100 rounded-full transition-colors"
+                  >
+                    <Trash2 size={16} className="text-red-500" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modal de notificación */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Notificación"
+      >
+        <p className="text-gray-700 text-center">{modalMessage}</p>
+        <button
+          onClick={() => setShowModal(false)}
+          className="w-full mt-4 bg-pink-500 text-white py-3 rounded-xl font-semibold hover:bg-pink-600 transition-colors"
+        >
+          Aceptar
+        </button>
+      </Modal>
+
+      {/* Modal de confirmación de eliminación */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="¿Eliminar síntoma?"
+      >
+        <p className="text-gray-700 text-center mb-4">
+          ¿Estás segura de que quieres eliminar este registro?
+        </p>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => setShowDeleteModal(false)}
+            className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={confirmDelete}
+            className="flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-colors"
+          >
+            Eliminar
+          </button>
+        </div>
+      </Modal>
+    </div>
+  );
+};
+
+export default Symptoms;
