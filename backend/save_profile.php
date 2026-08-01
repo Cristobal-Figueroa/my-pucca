@@ -20,11 +20,6 @@ if (empty($name)) {
     sendError('El nombre es requerido');
 }
 
-// La fecha del último periodo solo es requerida para mujeres
-if ($gender === 'woman' && empty($last_period_start)) {
-    sendError('La fecha del último periodo es requerida para mujeres');
-}
-
 // Si no hay user_id, generar uno nuevo
 if (!$user_id) {
     $user_id = uniqid('user_', true);
@@ -35,6 +30,11 @@ $stmt = $conn->prepare("SELECT id FROM users WHERE user_id = ?");
 $stmt->bind_param("s", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
+
+// La fecha del último periodo solo es requerida para mujeres al crear perfil
+if ($gender === 'woman' && empty($last_period_start) && $result->num_rows === 0) {
+    sendError('La fecha del último periodo es requerida para mujeres al crear perfil');
+}
 
 if ($result->num_rows > 0) {
     // Actualizar perfil existente

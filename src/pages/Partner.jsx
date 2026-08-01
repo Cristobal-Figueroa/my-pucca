@@ -106,19 +106,28 @@ const Partner = () => {
       // Sincronizar perfil
       const profileSaved = await saveProfile(profile);
       
+      if (!profileSaved) {
+        setSyncMessage('Error al guardar el perfil. Intenta nuevamente.');
+        return;
+      }
+      
       if (profile.gender === 'woman') {
         // Sincronizar periodos y síntomas si es mujer
         const periods = await getPeriods();
-        await savePeriodsToDB(periods);
+        const periodsSaved = await savePeriodsToDB(periods);
         
         const symptoms = await getSymptoms();
-        await saveSymptomsToDB(symptoms);
+        const symptomsSaved = await saveSymptomsToDB(symptoms);
+        
+        if (!periodsSaved || !symptomsSaved) {
+          setSyncMessage('Error al guardar periodos o síntomas. Intenta nuevamente.');
+          return;
+        }
       }
       
       setSyncMessage('¡Datos sincronizados exitosamente!');
       setTimeout(() => setSyncMessage(''), 3000);
     } catch (error) {
-      console.error('Error syncing to DB:', error);
       setSyncMessage('Error al sincronizar. Intenta nuevamente.');
       setTimeout(() => setSyncMessage(''), 3000);
     } finally {

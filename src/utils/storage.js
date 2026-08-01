@@ -19,10 +19,21 @@ export const saveProfile = async (profile) => {
       localStorage.setItem(STORAGE_KEYS.USER_ID, profile.user_id);
     }
     
+    // Convertir a formato snake_case para el backend
+    const backendProfile = {
+      user_id: profile.user_id,
+      name: profile.name,
+      cycle_length: profile.cycleLength || profile.cycle_length || 28,
+      period_length: profile.periodLength || profile.period_length || 5,
+      last_period_start: profile.lastPeriodStart || profile.last_period_start || '',
+      gender: profile.gender,
+      partner_code: profile.partnerCode || profile.partner_code || null
+    };
+    
     // Enviar al backend
     const response = await apiRequest(API_ENDPOINTS.SAVE_PROFILE, {
       method: 'POST',
-      body: JSON.stringify(profile)
+      body: JSON.stringify(backendProfile)
     });
     
     return response.success;
@@ -97,7 +108,6 @@ export const savePeriodsToDB = async (periods) => {
     
     return response.success;
   } catch (error) {
-    console.error('Error saving periods to DB:', error);
     return false;
   }
 };
@@ -212,7 +222,6 @@ export const saveSymptomsToDB = async (symptoms) => {
     
     return response.success;
   } catch (error) {
-    console.error('Error saving symptoms to DB:', error);
     return false;
   }
 };
