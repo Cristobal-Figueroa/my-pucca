@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Home, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getProfile, addPeriod, getPeriods } from '../utils/storage';
 import { generateCalendarData, CYCLE_PHASES } from '../utils/cycleCalculations';
 import { format, addMonths, subMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Modal from '../components/Modal';
+import Layout from '../components/Layout';
 
 const Calendar = () => {
   const navigate = useNavigate();
@@ -116,38 +117,26 @@ const Calendar = () => {
   const startDay = firstDayOfMonth.getDay();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 pb-20">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-md mx-auto px-4 py-4">
+    <Layout title={format(currentDate, 'MMMM yyyy', { locale: es })} showBackButton={false}>
+      <div className="space-y-6">
+        {/* Navegación de meses */}
+        <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm">
           <button
-            onClick={() => navigate('/')}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            onClick={handlePreviousMonth}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <Home size={20} className="mr-2" />
-            Inicio
+            <ChevronLeft size={24} className="text-gray-600" />
           </button>
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handlePreviousMonth}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <ChevronLeft size={24} className="text-gray-600" />
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {format(currentDate, 'MMMM yyyy', { locale: es })}
-            </h1>
-            <button
-              onClick={handleNextMonth}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <ChevronRight size={24} className="text-gray-600" />
-            </button>
-          </div>
+          <h2 className="text-xl font-bold text-gray-900">
+            {format(currentDate, 'MMMM yyyy', { locale: es })}
+          </h2>
+          <button
+            onClick={handleNextMonth}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <ChevronRight size={24} className="text-gray-600" />
+          </button>
         </div>
-      </div>
-
-      <div className="max-w-md mx-auto px-4 py-6">
         {/* Leyenda */}
         <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Leyenda</h3>
@@ -268,7 +257,7 @@ const Calendar = () => {
           </>
         )}
       </Modal>
-    </div>
+    </Layout>
   );
 };
 

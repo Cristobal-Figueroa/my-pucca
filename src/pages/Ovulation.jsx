@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, Droplets, Egg, Calendar, Info } from 'lucide-react';
+import { Droplets, Egg, Calendar, Info } from 'lucide-react';
 import { getProfile } from '../utils/storage';
 import { 
   calculateOvulationDate, 
@@ -10,6 +10,7 @@ import {
 } from '../utils/cycleCalculations';
 import { format, addDays, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
+import Layout from '../components/Layout';
 
 const Ovulation = () => {
   const navigate = useNavigate();
@@ -37,31 +38,16 @@ const Ovulation = () => {
     }
   }, []);
 
+  const isFertileToday = daysUntilOvulation >= -1 && daysUntilOvulation <= 5;
+  const isOvulationToday = daysUntilOvulation === 0;
+
   if (!profile || !ovulationDate || !fertileWindow) {
     return null;
   }
 
-  const isFertileToday = daysUntilOvulation >= -1 && daysUntilOvulation <= 5;
-  const isOvulationToday = daysUntilOvulation === 0;
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 pb-20">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-md mx-auto px-4 py-4">
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <Home size={20} className="mr-2" />
-            Inicio
-          </button>
-          <h1 className="text-2xl font-bold text-gray-900">Ovulación y Fertilidad</h1>
-          <p className="text-gray-600 mt-1">Tu ventana fértil</p>
-        </div>
-      </div>
-
-      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+    <Layout title="Ovulación y Fertilidad" showBackButton={false}>
+      <div className="space-y-6">
         {/* Estado actual */}
         <div className={`rounded-2xl p-6 shadow-lg ${
           isOvulationToday 
@@ -215,7 +201,7 @@ const Ovulation = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

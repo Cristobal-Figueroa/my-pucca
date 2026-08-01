@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Droplets, Heart, Settings, Plus } from 'lucide-react';
+import { Calendar, Droplets, Heart, Plus } from 'lucide-react';
 import { getProfile } from '../utils/storage';
 import { 
   getCyclePhase, 
@@ -12,6 +12,7 @@ import {
 } from '../utils/cycleCalculations';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import Layout from '../components/Layout';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -45,46 +46,28 @@ const Home = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">¡Bienvenida! 💕</h2>
-          <p className="text-gray-600 mb-6">
-            Para comenzar a trackear tu ciclo, necesitamos configurar tu perfil.
-          </p>
-          <button
-            onClick={() => navigate('/settings')}
-            className="bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all"
-          >
-            Configurar Perfil
-          </button>
+      <Layout showSettings={false}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">¡Bienvenida! 💕</h2>
+            <p className="text-gray-600 mb-6">
+              Para comenzar a trackear tu ciclo, necesitamos configurar tu perfil.
+            </p>
+            <button
+              onClick={() => navigate('/settings')}
+              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all"
+            >
+              Configurar Perfil
+            </button>
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 pb-24">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-md mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Hola, {profile.name} 👋
-            </h1>
-            <p className="text-gray-600 text-sm">
-              {format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}
-            </p>
-          </div>
-          <button
-            onClick={() => navigate('/settings')}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <Settings className="text-gray-600" size={24} />
-          </button>
-        </div>
-      </div>
-
-      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+    <Layout>
+      <div className="space-y-6">
         {/* Fase actual */}
         {phaseInfo && (
           <div className={`${phaseInfo.color} rounded-2xl p-6 text-white shadow-lg`}>
@@ -196,7 +179,7 @@ const Home = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
