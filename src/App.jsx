@@ -4,6 +4,7 @@ import Calendar from './pages/Calendar';
 import Ovulation from './pages/Ovulation';
 import Symptoms from './pages/Symptoms';
 import Settings from './pages/Settings';
+import Partner from './pages/Partner';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Route path="/ovulation" element={<Ovulation />} />
       <Route path="/symptoms" element={<Symptoms />} />
       <Route path="/settings" element={<Settings />} />
+      <Route path="/partner" element={<Partner />} />
     </Routes>
   );
 }

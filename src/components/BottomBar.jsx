@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Calendar, Droplets, Heart, Settings } from 'lucide-react';
+import { Home, Calendar, Droplets, Heart, Users } from 'lucide-react';
 
 const BottomBar = () => {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ const BottomBar = () => {
     { path: '/calendar', icon: Calendar, label: 'Calendario' },
     { path: '/ovulation', icon: Droplets, label: 'Ovulación' },
     { path: '/symptoms', icon: Heart, label: 'Síntomas' },
-    { path: '/settings', icon: Settings, label: 'Config' },
+    { path: '/partner', icon: Users, label: 'Pareja' },
   ];
 
   return (
