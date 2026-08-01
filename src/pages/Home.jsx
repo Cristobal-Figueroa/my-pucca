@@ -22,28 +22,31 @@ const Home = () => {
   const [daysUntilOvulation, setDaysUntilOvulation] = useState(0);
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    if (savedProfile) {
-      if (savedProfile.gender === 'man') {
-        navigate('/man-home');
-        return;
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile) {
+        if (savedProfile.gender === 'man') {
+          navigate('/man-home');
+          return;
+        }
+        setProfile(savedProfile);
+        
+        const today = new Date();
+        const lastPeriodStart = new Date(savedProfile.lastPeriodStart);
+        
+        const phase = getCyclePhase(
+          today,
+          lastPeriodStart,
+          savedProfile.cycleLength,
+          savedProfile.periodLength
+        );
+        setCurrentPhase(phase);
+        
+        setDaysUntilPeriod(getDaysUntilNextPeriod(lastPeriodStart, savedProfile.cycleLength));
+        setDaysUntilOvulation(getDaysUntilOvulation(lastPeriodStart, savedProfile.cycleLength));
       }
-      setProfile(savedProfile);
-      
-      const today = new Date();
-      const lastPeriodStart = new Date(savedProfile.lastPeriodStart);
-      
-      const phase = getCyclePhase(
-        today,
-        lastPeriodStart,
-        savedProfile.cycleLength,
-        savedProfile.periodLength
-      );
-      setCurrentPhase(phase);
-      
-      setDaysUntilPeriod(getDaysUntilNextPeriod(lastPeriodStart, savedProfile.cycleLength));
-      setDaysUntilOvulation(getDaysUntilOvulation(lastPeriodStart, savedProfile.cycleLength));
-    }
+    };
+    loadProfile();
   }, []);
 
   const phaseInfo = currentPhase ? getPhaseInfo(currentPhase) : null;

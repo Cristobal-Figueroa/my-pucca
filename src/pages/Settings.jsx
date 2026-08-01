@@ -18,13 +18,16 @@ const Settings = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    if (savedProfile) {
-      setProfile(savedProfile);
-    }
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile) {
+        setProfile(savedProfile);
+      }
+    };
+    loadProfile();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!profile.name) {
       setModalMessage('Por favor ingresa tu nombre');
       setShowModal(true);
@@ -37,7 +40,7 @@ const Settings = () => {
       return;
     }
 
-    saveProfile(profile);
+    await saveProfile(profile);
     setModalMessage('¡Perfil guardado exitosamente!');
     setShowModal(true);
     

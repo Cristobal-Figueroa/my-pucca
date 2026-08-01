@@ -14,21 +14,24 @@ const ManCalendar = () => {
   const [calendarDays, setCalendarDays] = useState([]);
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    if (savedProfile && savedProfile.gender === 'man') {
-      setProfile(savedProfile);
-      // Simular datos de la pareja
-      const simulatedPartner = {
-        name: 'Tu Pareja',
-        cycleLength: 28,
-        periodLength: 5,
-        lastPeriodStart: '2026-07-20'
-      };
-      setPartnerData(simulatedPartner);
-      generateCalendar(simulatedPartner, currentDate);
-    } else {
-      navigate('/welcome');
-    }
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile && savedProfile.gender === 'man') {
+        setProfile(savedProfile);
+        // Simular datos de la pareja
+        const simulatedPartner = {
+          name: 'Tu Pareja',
+          cycleLength: 28,
+          periodLength: 5,
+          lastPeriodStart: '2026-07-20'
+        };
+        setPartnerData(simulatedPartner);
+        generateCalendar(simulatedPartner, currentDate);
+      } else {
+        navigate('/');
+      }
+    };
+    loadProfile();
   }, [currentDate]);
 
   const generateCalendar = (partner, date) => {

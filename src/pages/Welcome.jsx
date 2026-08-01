@@ -1,10 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, User, Sparkles, ArrowLeft } from 'lucide-react';
+import { getProfile } from '../utils/storage';
 
 const Welcome = () => {
   const navigate = useNavigate();
   const [selectedGender, setSelectedGender] = useState(null);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+
+  useEffect(() => {
+    const checkProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile) {
+        if (savedProfile.gender === 'man') {
+          navigate('/man-home');
+        } else {
+          navigate('/home');
+        }
+      } else {
+        setCheckingProfile(false);
+      }
+    };
+    checkProfile();
+  }, []);
+
+  if (checkingProfile) {
+    return null;
+  }
 
   const handleGenderSelect = (gender) => {
     setSelectedGender(gender);

@@ -12,31 +12,34 @@ const ManTips = () => {
   const [currentPhase, setCurrentPhase] = useState(null);
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    if (savedProfile && savedProfile.gender === 'man') {
-      setProfile(savedProfile);
-      // Simular datos de la pareja
-      const simulatedPartner = {
-        name: 'Tu Pareja',
-        cycleLength: 28,
-        periodLength: 5,
-        lastPeriodStart: '2026-07-20'
-      };
-      setPartnerData(simulatedPartner);
-      
-      // Calcular fase actual
-      const today = new Date();
-      const lastPeriodStart = new Date(simulatedPartner.lastPeriodStart);
-      const phase = getCyclePhase(
-        today,
-        lastPeriodStart,
-        simulatedPartner.cycleLength,
-        simulatedPartner.periodLength
-      );
-      setCurrentPhase(phase);
-    } else {
-      navigate('/welcome');
-    }
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile && savedProfile.gender === 'man') {
+        setProfile(savedProfile);
+        // Simular datos de la pareja
+        const simulatedPartner = {
+          name: 'Tu Pareja',
+          cycleLength: 28,
+          periodLength: 5,
+          lastPeriodStart: '2026-07-20'
+        };
+        setPartnerData(simulatedPartner);
+        
+        // Calcular fase actual
+        const today = new Date();
+        const lastPeriodStart = new Date(simulatedPartner.lastPeriodStart);
+        const phase = getCyclePhase(
+          today,
+          lastPeriodStart,
+          simulatedPartner.cycleLength,
+          simulatedPartner.periodLength
+        );
+        setCurrentPhase(phase);
+      } else {
+        navigate('/');
+      }
+    };
+    loadProfile();
   }, []);
 
   const tipsByPhase = {

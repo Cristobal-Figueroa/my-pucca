@@ -93,7 +93,17 @@ const RegisterWoman = () => {
               <input
                 type="number"
                 value={cycleLength}
-                onChange={(e) => setCycleLength(parseInt(e.target.value) || 28)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCycleLength(value === '' ? '' : parseInt(value));
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === '' || parseInt(e.target.value) < 21) {
+                    setCycleLength(28);
+                  } else if (parseInt(e.target.value) > 35) {
+                    setCycleLength(35);
+                  }
+                }}
                 min="21"
                 max="35"
                 className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent"
@@ -114,7 +124,17 @@ const RegisterWoman = () => {
               <input
                 type="number"
                 value={periodLength}
-                onChange={(e) => setPeriodLength(parseInt(e.target.value) || 5)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setPeriodLength(value === '' ? '' : parseInt(value));
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === '' || parseInt(e.target.value) < 2) {
+                    setPeriodLength(5);
+                  } else if (parseInt(e.target.value) > 7) {
+                    setPeriodLength(7);
+                  }
+                }}
                 min="2"
                 max="7"
                 className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent"

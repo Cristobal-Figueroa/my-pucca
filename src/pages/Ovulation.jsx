@@ -21,21 +21,24 @@ const Ovulation = () => {
   const [daysUntilPeriod, setDaysUntilPeriod] = useState(0);
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    if (savedProfile) {
-      setProfile(savedProfile);
-      
-      const lastPeriodStart = new Date(savedProfile.lastPeriodStart);
-      const ovDate = calculateOvulationDate(lastPeriodStart, savedProfile.cycleLength);
-      const fertileW = calculateFertileWindow(ovDate);
-      
-      setOvulationDate(ovDate);
-      setFertileWindow(fertileW);
-      setDaysUntilOvulation(getDaysUntilOvulation(lastPeriodStart, savedProfile.cycleLength));
-      setDaysUntilPeriod(getDaysUntilNextPeriod(lastPeriodStart, savedProfile.cycleLength));
-    } else {
-      navigate('/settings');
-    }
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile) {
+        setProfile(savedProfile);
+        
+        const lastPeriodStart = new Date(savedProfile.lastPeriodStart);
+        const ovDate = calculateOvulationDate(lastPeriodStart, savedProfile.cycleLength);
+        const fertileW = calculateFertileWindow(ovDate);
+        
+        setOvulationDate(ovDate);
+        setFertileWindow(fertileW);
+        setDaysUntilOvulation(getDaysUntilOvulation(lastPeriodStart, savedProfile.cycleLength));
+        setDaysUntilPeriod(getDaysUntilNextPeriod(lastPeriodStart, savedProfile.cycleLength));
+      } else {
+        navigate('/settings');
+      }
+    };
+    loadProfile();
   }, []);
 
   const isFertileToday = daysUntilOvulation >= -1 && daysUntilOvulation <= 5;

@@ -11,15 +11,18 @@ const Partner = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    if (savedProfile) {
-      setProfile(savedProfile);
-      // Generar código de sincronización basado en el nombre y fecha de inicio
-      const code = generateSyncCode(savedProfile.name, savedProfile.lastPeriodStart);
-      setSyncCode(code);
-    } else {
-      navigate('/settings');
-    }
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile) {
+        setProfile(savedProfile);
+        // Generar código de sincronización basado en el nombre y fecha de inicio
+        const code = generateSyncCode(savedProfile.name, savedProfile.lastPeriodStart);
+        setSyncCode(code);
+      } else {
+        navigate('/settings');
+      }
+    };
+    loadProfile();
   }, []);
 
   const generateSyncCode = (name, lastPeriodStart) => {

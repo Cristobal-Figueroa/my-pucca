@@ -19,13 +19,16 @@ const Calendar = () => {
   const [showAddPeriodModal, setShowAddPeriodModal] = useState(false);
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    if (savedProfile) {
-      setProfile(savedProfile);
-      generateCalendar(savedProfile, currentDate);
-    } else {
-      navigate('/settings');
-    }
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile) {
+        setProfile(savedProfile);
+        generateCalendar(savedProfile, currentDate);
+      } else {
+        navigate('/settings');
+      }
+    };
+    loadProfile();
   }, [currentDate]);
 
   const generateCalendar = (profileData, date) => {
@@ -52,7 +55,7 @@ const Calendar = () => {
     setShowAddPeriodModal(true);
   };
 
-  const handleAddPeriod = () => {
+  const handleAddPeriod = async () => {
     if (selectedDate) {
       const newPeriod = {
         id: Date.now().toString(),
@@ -60,7 +63,7 @@ const Calendar = () => {
         notes: ''
       };
       
-      addPeriod(newPeriod);
+      await addPeriod(newPeriod);
       
       // Actualizar el perfil con la nueva fecha de inicio
       const updatedProfile = {
@@ -68,7 +71,7 @@ const Calendar = () => {
         lastPeriodStart: newPeriod.date
       };
       setProfile(updatedProfile);
-      saveProfile(updatedProfile); // Guardar en storage para que actualice toda la app
+      await saveProfile(updatedProfile); // Guardar en storage para que actualice toda la app
       
       // Regenerar calendario
       generateCalendar(updatedProfile, currentDate);

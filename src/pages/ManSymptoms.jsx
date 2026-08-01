@@ -13,18 +13,21 @@ const ManSymptoms = () => {
   const [symptoms, setSymptoms] = useState(null);
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    if (savedProfile && savedProfile.gender === 'man') {
-      setProfile(savedProfile);
-      // Simular datos de la pareja
-      const simulatedPartner = {
-        name: 'Tu Pareja'
-      };
-      setPartnerData(simulatedPartner);
-      loadSymptoms(selectedDate);
-    } else {
-      navigate('/welcome');
-    }
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile && savedProfile.gender === 'man') {
+        setProfile(savedProfile);
+        // Simular datos de la pareja
+        const simulatedPartner = {
+          name: 'Tu Pareja'
+        };
+        setPartnerData(simulatedPartner);
+        loadSymptoms(selectedDate);
+      } else {
+        navigate('/');
+      }
+    };
+    loadProfile();
   }, [selectedDate]);
 
   const loadSymptoms = (date) => {

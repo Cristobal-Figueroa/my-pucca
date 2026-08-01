@@ -15,47 +15,52 @@ const ManHome = () => {
   const [daysUntilOvulation, setDaysUntilOvulation] = useState(0);
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    if (savedProfile && savedProfile.gender === 'man') {
-      setProfile(savedProfile);
-      // Aquí se cargarían los datos de la pareja desde el backend
-      // Por ahora, simulamos datos de la pareja
-      const simulatedPartner = {
-        name: 'Tu Pareja',
-        cycleLength: 28,
-        periodLength: 5,
-        lastPeriodStart: '2026-07-20'
-      };
-      setPartnerData(simulatedPartner);
-      
-      // Calcular fase actual de la pareja
-      const today = new Date();
-      const lastPeriodStart = new Date(simulatedPartner.lastPeriodStart);
-      const phase = getCyclePhase(
-        today,
-        lastPeriodStart,
-        simulatedPartner.cycleLength,
-        simulatedPartner.periodLength
-      );
-      setCurrentPhase(phase);
-      
-      // Calcular día del ciclo
-      const daysSinceLastPeriod = differenceInDays(today, lastPeriodStart);
-      const currentCycleDay = ((daysSinceLastPeriod % simulatedPartner.cycleLength) + simulatedPartner.cycleLength) % simulatedPartner.cycleLength;
-      setCycleDay(currentCycleDay + 1);
-      
-      // Calcular días hasta periodo
-      const daysInCycle = simulatedPartner.cycleLength;
-      const daysUntilPeriodCalc = daysInCycle - currentCycleDay;
-      setDaysUntilPeriod(daysUntilPeriodCalc);
-      
-      // Calcular días hasta ovulación (cicloLength - 14)
-      const ovulationDayIndex = simulatedPartner.cycleLength - 14;
-      const daysUntilOvulationCalc = ovulationDayIndex - currentCycleDay;
-      setDaysUntilOvulation(daysUntilOvulationCalc);
-    } else {
-      navigate('/welcome');
-    }
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile && savedProfile.gender === 'man') {
+        setProfile(savedProfile);
+        // Aquí se cargarían los datos de la pareja desde el backend
+        // Por ahora, simulamos datos de la pareja
+        const simulatedPartner = {
+          name: 'Tu Pareja',
+          cycleLength: 28,
+          periodLength: 5,
+          lastPeriodStart: '2026-07-20'
+        };
+        setPartnerData(simulatedPartner);
+        
+        // Calcular fase actual de la pareja
+        const today = new Date();
+        const lastPeriodStart = new Date(simulatedPartner.lastPeriodStart);
+        const phase = getCyclePhase(
+          today,
+          lastPeriodStart,
+          simulatedPartner.cycleLength,
+          simulatedPartner.periodLength
+        );
+        setCurrentPhase(phase);
+        
+        // Calcular día del ciclo
+        const daysSinceLastPeriod = differenceInDays(today, lastPeriodStart);
+        const currentCycleDay = ((daysSinceLastPeriod % simulatedPartner.cycleLength) + simulatedPartner.cycleLength) % simulatedPartner.cycleLength;
+        setCycleDay(currentCycleDay + 1);
+        
+        // Calcular días hasta periodo
+        const daysInCycle = simulatedPartner.cycleLength;
+        const daysUntilPeriodCalc = daysInCycle - currentCycleDay;
+        setDaysUntilPeriod(daysUntilPeriodCalc);
+        
+        // Calcular días hasta ovulación (cicloLength - 14)
+        const ovulationDayIndex = simulatedPartner.cycleLength - 14;
+        const daysUntilOvulationCalc = ovulationDayIndex - currentCycleDay;
+        setDaysUntilOvulation(daysUntilOvulationCalc);
+      } else if (savedProfile && savedProfile.gender !== 'man') {
+        navigate('/home');
+      } else {
+        navigate('/');
+      }
+    };
+    loadProfile();
   }, []);
 
   if (!profile || !partnerData) {

@@ -106,17 +106,20 @@ const Symptoms = () => {
   ];
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    if (savedProfile) {
-      setProfile(savedProfile);
-      loadSymptomsForDate(selectedDate);
-    } else {
-      navigate('/settings');
-    }
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      if (savedProfile) {
+        setProfile(savedProfile);
+        loadSymptomsForDate(selectedDate);
+      } else {
+        navigate('/settings');
+      }
+    };
+    loadProfile();
   }, [selectedDate]);
 
-  const loadSymptomsForDate = (date) => {
-    const symptomsForDate = getSymptomsByDate(new Date(date));
+  const loadSymptomsForDate = async (date) => {
+    const symptomsForDate = await getSymptomsByDate(new Date(date));
     setSavedSymptoms(symptomsForDate);
     
     if (symptomsForDate.length > 0) {
@@ -149,7 +152,7 @@ const Symptoms = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!symptoms.mood && !symptoms.libido && !symptoms.cravings && !symptoms.energy && 
         !symptoms.sleep && !symptoms.pain && !symptoms.skin && !symptoms.digestion && 
         !symptoms.headache && !symptoms.notes) {
@@ -174,8 +177,8 @@ const Symptoms = () => {
       timestamp: new Date().toISOString()
     };
 
-    addSymptom(newSymptom);
-    loadSymptomsForDate(selectedDate);
+    await addSymptom(newSymptom);
+    await loadSymptomsForDate(selectedDate);
     
     setModalMessage('¡Síntomas guardados exitosamente!');
     setShowModal(true);
@@ -186,10 +189,10 @@ const Symptoms = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (symptomToDelete) {
-      deleteSymptom(symptomToDelete.id);
-      loadSymptomsForDate(selectedDate);
+      await deleteSymptom(symptomToDelete.id);
+      await loadSymptomsForDate(selectedDate);
       setShowDeleteModal(false);
       setSymptomToDelete(null);
       setModalMessage('Síntoma eliminado');
