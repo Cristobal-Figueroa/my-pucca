@@ -110,23 +110,29 @@ export const generateCalendarData = (year, month, lastPeriodStart, cycleLength, 
   const calendarData = [];
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  
-  const ovulationDate = calculateOvulationDate(lastPeriodStart, cycleLength);
-  const fertileWindow = calculateFertileWindow(ovulationDate);
-  const nextPeriod = calculateNextPeriod(lastPeriodStart, cycleLength);
 
   for (let day = 1; day <= lastDay.getDate(); day++) {
     const currentDate = new Date(year, month, day);
     const phase = getCyclePhase(currentDate, lastPeriodStart, cycleLength, periodLength);
     
+    // Calcular en qué ciclo está este día
+    const daysSinceLastPeriod = differenceInDays(currentDate, lastPeriodStart);
+    const cycleNumber = Math.floor(daysSinceLastPeriod / cycleLength);
+    
+    // Calcular ovulación y ventana fértil para ESTE ciclo específico
+    const cycleStartDate = addDays(lastPeriodStart, cycleNumber * cycleLength);
+    const cycleOvulationDate = calculateOvulationDate(cycleStartDate, cycleLength);
+    const cycleFertileWindow = calculateFertileWindow(cycleOvulationDate);
+    const cycleNextPeriod = calculateNextPeriod(cycleStartDate, cycleLength);
+    
     let specialDay = null;
     
-    if (isSameDay(currentDate, ovulationDate)) {
+    if (isSameDay(currentDate, cycleOvulationDate)) {
       specialDay = 'ovulation';
-    } else if ((isAfter(currentDate, fertileWindow.start) || isSameDay(currentDate, fertileWindow.start)) &&
-               (isBefore(currentDate, fertileWindow.end) || isSameDay(currentDate, fertileWindow.end))) {
+    } else if ((isAfter(currentDate, cycleFertileWindow.start) || isSameDay(currentDate, cycleFertileWindow.start)) &&
+               (isBefore(currentDate, cycleFertileWindow.end) || isSameDay(currentDate, cycleFertileWindow.end))) {
       specialDay = 'fertile';
-    } else if (isSameDay(currentDate, nextPeriod)) {
+    } else if (isSameDay(currentDate, cycleNextPeriod)) {
       specialDay = 'predicted_period';
     }
 
