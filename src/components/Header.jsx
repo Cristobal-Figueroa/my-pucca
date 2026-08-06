@@ -11,8 +11,11 @@ const Header = ({ title, showBackButton = false, showSettings = true, showTips =
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    const savedProfile = getProfile();
-    setProfile(savedProfile);
+    const loadProfile = async () => {
+      const savedProfile = await getProfile();
+      setProfile(savedProfile);
+    };
+    loadProfile();
   }, []);
 
   // Ocultar consejos si el usuario es hombre
