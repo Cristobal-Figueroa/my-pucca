@@ -19,14 +19,14 @@ const BottomBar = () => {
   const navItems = isMan ? [
     { path: '/man-home', icon: Home, label: 'Inicio' },
     { path: '/man-calendar', icon: Calendar, label: 'Calendario' },
-    { path: '/man-symptoms', icon: Activity, label: 'Mis Síntomas' },
     { path: '/man-symptoms-partner', icon: Heart, label: 'Ella' },
+    { path: '/man-symptoms', icon: Activity, label: 'Mis Síntomas' },
     { path: '/man-tips', icon: Lightbulb, label: 'Consejos' },
   ] : [
     { path: '/home', icon: Home, label: 'Inicio' },
     { path: '/calendar', icon: Calendar, label: 'Calendario' },
-    { path: '/el', icon: Droplets, label: 'Él' },
-    { path: '/ella', icon: Heart, label: 'Ella' },
+    { path: '/el', icon: Heart, label: 'Él' },
+    { path: '/ella', icon: Activity, label: 'Mis Síntomas' },
     { path: '/partner', icon: Users, label: 'Pareja' },
   ];
 

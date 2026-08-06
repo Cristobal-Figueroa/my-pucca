@@ -23,16 +23,42 @@ $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
     $partner = $result->fetch_assoc();
+    $partner_user_id = $partner['user_id'];
     
     // Actualizar el perfil del hombre con el código de su pareja
     $stmt = $conn->prepare("UPDATE users SET partner_code = ? WHERE user_id = ?");
     $stmt->bind_param("ss", $partner_code, $user_id);
     $stmt->execute();
     
+    // Generar un código para el hombre si no tiene uno
+    $stmt = $conn->prepare("SELECT partner_code FROM users WHERE user_id = ?");
+    $stmt->bind_param("s", $user_id);
+    $stmt->execute();
+    $man_result = $stmt->get_result();
+    $man_data = $man_result->fetch_assoc();
+    
+    $man_partner_code = $man_data['partner_code'] ?? null;
+    
+    if (empty($man_partner_code)) {
+        // Generar código único para el hombre
+        $man_partner_code = strtoupper(substr(md5(uniqid($user_id, true)), 0, 6));
+        
+        // Actualizar el código del hombre
+        $stmt = $conn->prepare("UPDATE users SET partner_code = ? WHERE user_id = ?");
+        $stmt->bind_param("ss", $man_partner_code, $user_id);
+        $stmt->execute();
+    }
+    
+    // Guardar el código del hombre en el perfil de la mujer para sincronización bidireccional
+    $stmt = $conn->prepare("UPDATE users SET partner_code = ? WHERE user_id = ?");
+    $stmt->bind_param("ss", $man_partner_code, $partner_user_id);
+    $stmt->execute();
+    
     sendResponse([
         'success' => true,
         'message' => 'Sincronización exitosa',
-        'partner' => $partner
+        'partner' => $partner,
+        'man_partner_code' => $man_partner_code
     ]);
 } else {
     sendError('Código de pareja no válido', 404);

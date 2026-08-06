@@ -36,6 +36,11 @@ if ($gender === 'woman' && empty($last_period_start) && $result->num_rows === 0)
     sendError('La fecha del último periodo es requerida para mujeres al crear perfil');
 }
 
+// Generar código de pareja para mujeres si no tiene uno
+if ($gender === 'woman' && empty($partner_code)) {
+    $partner_code = strtoupper(substr(md5(uniqid($user_id . $name . $last_period_start, true)), 0, 6));
+}
+
 if ($result->num_rows > 0) {
     // Actualizar perfil existente
     $stmt = $conn->prepare("UPDATE users SET name = ?, cycle_length = ?, period_length = ?, last_period_start = ?, gender = ?, partner_code = ? WHERE user_id = ?");
@@ -45,7 +50,8 @@ if ($result->num_rows > 0) {
         sendResponse([
             'success' => true,
             'message' => 'Perfil actualizado exitosamente',
-            'user_id' => $user_id
+            'user_id' => $user_id,
+            'partner_code' => $partner_code
         ]);
     } else {
         sendError('Error al actualizar el perfil');
@@ -59,7 +65,8 @@ if ($result->num_rows > 0) {
         sendResponse([
             'success' => true,
             'message' => 'Perfil creado exitosamente',
-            'user_id' => $user_id
+            'user_id' => $user_id,
+            'partner_code' => $partner_code
         ]);
     } else {
         sendError('Error al crear el perfil');

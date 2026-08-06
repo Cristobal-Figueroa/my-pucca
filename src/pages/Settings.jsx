@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, Calendar, Clock, Trash2, LogOut } from 'lucide-react';
-import { saveProfile, getProfile, clearAllData } from '../utils/storage';
+import { Save, Calendar, Clock, Trash2, LogOut, Key, CheckCircle, Users } from 'lucide-react';
+import { saveProfile, getProfile, clearAllData, getPartnerProfile, syncPartner } from '../utils/storage';
 import Modal from '../components/Modal';
 import Layout from '../components/Layout';
 
@@ -19,12 +19,27 @@ const Settings = () => {
   const [modalMessage, setModalMessage] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [partnerCode, setPartnerCode] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
+  const [isValid, setIsValid] = useState(null);
+  const [partnerName, setPartnerName] = useState('');
 
   useEffect(() => {
     const loadProfile = async () => {
       const savedProfile = await getProfile();
       if (savedProfile) {
         setProfile(savedProfile);
+        
+        // Si es hombre, cargar el código de pareja ya guardado
+        if (savedProfile.gender === 'man' && savedProfile.partnerCode) {
+          setPartnerCode(savedProfile.partnerCode);
+          // Intentar cargar el nombre de la pareja
+          const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+          if (partnerProfile) {
+            setPartnerName(partnerProfile.name);
+            setIsValid(true);
+          }
+        }
       }
     };
     loadProfile();
@@ -37,20 +52,30 @@ const Settings = () => {
       return;
     }
 
-    if (!profile.lastPeriodStart) {
+    if (!profile.lastPeriodStart && profile.gender !== 'man') {
       setModalMessage('Por favor selecciona la fecha de inicio de tu último periodo');
       setShowModal(true);
       return;
     }
 
-    await saveProfile(profile);
-    setModalMessage('¡Perfil guardado exitosamente!');
-    setShowModal(true);
-    
-    // Navegar a Home para forzar recarga de toda la app con el nuevo perfil
-    setTimeout(() => {
-      navigate('/');
-    }, 1500);
+    const saved = await saveProfile(profile);
+    if (saved) {
+      // Recargar el perfil para obtener el partner_code generado por el backend
+      const updatedProfile = await getProfile();
+      if (updatedProfile) {
+        setProfile(updatedProfile);
+      }
+      setModalMessage('¡Perfil guardado exitosamente!');
+      setShowModal(true);
+      
+      // Navegar a Home para forzar recarga de toda la app con el nuevo perfil
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
+    } else {
+      setModalMessage('Error al guardar el perfil. Intenta nuevamente.');
+      setShowModal(true);
+    }
   };
 
   const handleDeleteData = () => {
@@ -72,6 +97,46 @@ const Settings = () => {
     clearAllData();
     setShowLogoutModal(false);
     navigate('/');
+  };
+
+  const handlePartnerCodeSubmit = async () => {
+    if (!partnerCode.trim()) {
+      return;
+    }
+
+    setIsValidating(true);
+    setIsValid(null);
+
+    const partnerProfile = await getPartnerProfile(partnerCode.toUpperCase());
+    
+    if (partnerProfile) {
+      setIsValid(true);
+      setPartnerName(partnerProfile.name);
+      
+      // Guardar el código en el perfil del hombre
+      const updatedProfile = {
+        ...profile,
+        partnerCode: partnerCode.toUpperCase()
+      };
+      await saveProfile(updatedProfile);
+      setProfile(updatedProfile);
+      
+      // Sincronizar bidireccionalmente en el backend
+      const syncResult = await syncPartner(partnerCode.toUpperCase());
+      
+      if (syncResult) {
+        setModalMessage('¡Código de pareja guardado exitosamente! Sincronización completada.');
+      } else {
+        setModalMessage('¡Código de pareja guardado! (La sincronización puede tardar unos segundos)');
+      }
+      setShowModal(true);
+    } else {
+      setIsValid(false);
+      setModalMessage('Código no encontrado. Verifica que sea correcto.');
+      setShowModal(true);
+    }
+    
+    setIsValidating(false);
   };
 
   return (
@@ -167,6 +232,64 @@ const Settings = () => {
               <Save size={20} />
               <span>Guardar Configuración</span>
             </button>
+          </>
+        )}
+
+        {/* Opciones solo para hombres - Código de pareja */}
+        {profile.gender === 'man' && (
+          <>
+            {/* Código de pareja */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center mb-4">
+                <Users className="text-blue-500 mr-2" size={24} />
+                <h3 className="text-lg font-semibold text-gray-900">Conectar con tu pareja</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Ingresa el código que tu pareja te dio para ver sus síntomas y ciclo
+              </p>
+              
+              {isValid && partnerName ? (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                  <div className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2" size={20} />
+                    <div>
+                      <p className="font-medium text-green-900">Conectado con {partnerName}</p>
+                      <p className="text-sm text-green-700">Código: {partnerCode}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex space-x-2 mb-4">
+                    <input
+                      type="text"
+                      value={partnerCode}
+                      onChange={(e) => setPartnerCode(e.target.value.toUpperCase())}
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
+                      placeholder="Código de 6 caracteres"
+                      maxLength={6}
+                    />
+                    <button
+                      onClick={handlePartnerCodeSubmit}
+                      disabled={isValidating}
+                      className="px-6 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                    >
+                      {isValidating ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      ) : (
+                        <Key size={20} />
+                      )}
+                    </button>
+                  </div>
+                  
+                  {isValid === false && (
+                    <p className="text-sm text-red-600">
+                      Código no válido. Pídele a tu pareja que te dé su código.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
           </>
         )}
 

@@ -32,9 +32,14 @@ const Partner = () => {
             setIsValid(true);
           }
         } else if (savedProfile.gender === 'woman') {
-          // Si es mujer, generar su código
-          const code = generateSyncCode(savedProfile.name, savedProfile.lastPeriodStart);
-          setSyncCode(code);
+          // Si es mujer, usar el código generado por el backend
+          if (savedProfile.partnerCode) {
+            setSyncCode(savedProfile.partnerCode);
+          } else {
+            // Si no tiene código, generar uno temporal para mostrar
+            const code = generateSyncCode(savedProfile.name, savedProfile.lastPeriodStart);
+            setSyncCode(code);
+          }
         }
       } else {
         navigate('/settings');
@@ -63,9 +68,20 @@ const Partner = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleRefresh = () => {
-    if (profile) {
+  const handleRefresh = async () => {
+    if (profile && profile.gender === 'woman') {
+      // Generar nuevo código
       const newCode = generateSyncCode(profile.name, profile.lastPeriodStart);
+      
+      // Actualizar el perfil con el nuevo código
+      const updatedProfile = {
+        ...profile,
+        partnerCode: newCode
+      };
+      
+      // Guardar en backend y localStorage
+      await saveProfile(updatedProfile);
+      setProfile(updatedProfile);
       setSyncCode(newCode);
     }
   };

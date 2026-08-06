@@ -36,7 +36,15 @@ export const saveProfile = async (profile) => {
       body: JSON.stringify(backendProfile)
     });
     
-    return response.success;
+    if (response.success) {
+      // Si el backend generó un partner_code, actualizar el perfil local
+      if (response.partner_code) {
+        profile.partnerCode = response.partner_code;
+        localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+      }
+      return true;
+    }
+    return false;
   } catch (error) {
     console.error('Error saving profile:', error);
     // Si falla el backend, al menos está en localStorage
@@ -402,6 +410,27 @@ export const getPartnerAllSymptoms = async (partnerCode) => {
   } catch (error) {
     console.error('Error getting all partner symptoms:', error);
     return [];
+  }
+};
+
+// Sincronizar pareja bidireccionalmente
+export const syncPartner = async (partnerCode) => {
+  try {
+    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    if (!userId) return false;
+    
+    const response = await apiRequest(API_ENDPOINTS.PARTNER_SYNC, {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        partner_code: partnerCode
+      })
+    });
+    
+    return response.success;
+  } catch (error) {
+    console.error('Error syncing partner:', error);
+    return false;
   }
 };
 

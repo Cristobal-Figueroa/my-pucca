@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Smile, Flame, Utensils, Moon, Zap, Droplet, Activity, Headphones, Heart } from 'lucide-react';
-import { getProfile, getPartnerProfile, parseLocalDate } from '../utils/storage';
+import { getProfile, getPartnerProfile, getPartnerAllSymptoms } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Layout from '../components/Layout';
@@ -102,17 +102,18 @@ const El = () => {
         if (savedProfile && savedProfile.gender === 'woman') {
           setProfile(savedProfile);
           
+          // El partnerCode ahora es el código del hombre (guardado por el backend durante la sincronización)
           if (savedProfile.partnerCode) {
             const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
-            if (partnerProfile) {
+            if (partnerProfile && partnerProfile.gender === 'man') {
               setPartnerData(partnerProfile);
               loadPartnerSymptomsForDate(selectedDate, savedProfile.partnerCode);
             } else {
-              setError('No se encontró el perfil de tu pareja. Verifica el código.');
+              setError('Tu pareja aún no se ha conectado. Pídele que ingrese tu código en Ajustes.');
               setPartnerData(null);
             }
           } else {
-            setError('No tienes un código de pareja configurado. Ve a la sección Pareja para conectar.');
+            setError('Tu pareja aún no se ha conectado. Pídele que ingrese tu código en Ajustes.');
           }
         } else {
           navigate('/man-home');
@@ -128,9 +129,14 @@ const El = () => {
   }, [selectedDate]);
 
   const loadPartnerSymptomsForDate = async (date, partnerCode) => {
-    // Aquí cargaríamos los síntomas del hombre desde el backend
-    // Por ahora, mostraremos un mensaje indicando que necesita implementarse
-    setPartnerSymptoms(null);
+    try {
+      const allSymptoms = await getPartnerAllSymptoms(partnerCode);
+      const symptomForDate = allSymptoms.find(s => s.date === date);
+      setPartnerSymptoms(symptomForDate || null);
+    } catch (error) {
+      console.error('Error loading partner symptoms:', error);
+      setPartnerSymptoms(null);
+    }
   };
 
   if (loading) {
@@ -208,29 +214,147 @@ const El = () => {
           </p>
         </div>
 
-        {/* Mensaje de implementación pendiente */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
-          <div className="flex items-start">
-            <span className="text-2xl mr-3">🚧</span>
-            <div>
-              <h3 className="text-lg font-semibold text-yellow-900 mb-2">Funcionalidad en desarrollo</h3>
-              <p className="text-sm text-yellow-800">
-                Tu pareja necesita registrar sus síntomas primero. Pídele que vaya a la sección "Síntomas" en su app para empezar a trackear cómo se siente.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Placeholder para cuando haya síntomas */}
+        {/* Síntomas del hombre */}
         {partnerSymptoms ? (
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Síntomas registrados</h3>
-            {/* Aquí se mostrarán los síntomas del hombre */}
+            
+            {/* Estado de ánimo */}
+            {partnerSymptoms.mood && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Smile className="text-blue-500 mr-2" size={20} />
+                  <h4 className="font-medium text-gray-900">Estado de ánimo</h4>
+                </div>
+                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                  {moodOptions.find(o => o.value === partnerSymptoms.mood)?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Libido */}
+            {partnerSymptoms.libido && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Flame className="text-red-500 mr-2" size={20} />
+                  <h4 className="font-medium text-gray-900">Libido</h4>
+                </div>
+                <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
+                  {libidoOptions.find(o => o.value === partnerSymptoms.libido)?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Antojos */}
+            {partnerSymptoms.cravings && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Utensils className="text-orange-500 mr-2" size={20} />
+                  <h4 className="font-medium text-gray-900">Antojos</h4>
+                </div>
+                <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm">
+                  {cravingsOptions.find(o => o.value === partnerSymptoms.cravings)?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Energía */}
+            {partnerSymptoms.energy && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Zap className="text-amber-600 mr-2" size={20} />
+                  <h4 className="font-medium text-gray-900">Energía</h4>
+                </div>
+                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                  {energyOptions.find(o => o.value === partnerSymptoms.energy)?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Sueño */}
+            {partnerSymptoms.sleep && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Moon className="text-indigo-500 mr-2" size={20} />
+                  <h4 className="font-medium text-gray-900">Sueño</h4>
+                </div>
+                <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">
+                  {sleepOptions.find(o => o.value === partnerSymptoms.sleep)?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Dolor */}
+            {partnerSymptoms.pain && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Activity className="text-red-500 mr-2" size={20} />
+                  <h4 className="font-medium text-gray-900">Dolor</h4>
+                </div>
+                <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
+                  {painOptions.find(o => o.value === partnerSymptoms.pain)?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Piel */}
+            {partnerSymptoms.skin && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Droplet className="text-blue-500 mr-2" size={20} />
+                  <h4 className="font-medium text-gray-900">Piel</h4>
+                </div>
+                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                  {skinOptions.find(o => o.value === partnerSymptoms.skin)?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Digestión */}
+            {partnerSymptoms.digestion && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Utensils className="text-green-500 mr-2" size={20} />
+                  <h4 className="font-medium text-gray-900">Digestión</h4>
+                </div>
+                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                  {digestionOptions.find(o => o.value === partnerSymptoms.digestion)?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Dolor de cabeza */}
+            {partnerSymptoms.headache && (
+              <div className="mb-4">
+                <div className="flex items-center mb-3">
+                  <Headphones className="text-purple-500 mr-2" size={20} />
+                  <h4 className="font-medium text-gray-900">Dolor de cabeza</h4>
+                </div>
+                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                  {headacheOptions.find(o => o.value === partnerSymptoms.headache)?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Notas adicionales */}
+            {partnerSymptoms.notes && (
+              <div className="mt-4 bg-blue-50 rounded-xl p-4">
+                <div className="flex items-center mb-2">
+                  <Heart className="mr-2 text-blue-500" size={16} />
+                  <h4 className="font-medium text-gray-900">Notas adicionales</h4>
+                </div>
+                <p className="text-sm text-gray-700">{partnerSymptoms.notes}</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="bg-gray-50 rounded-2xl p-6 text-center">
-            <p className="text-gray-600">
-              No hay síntomas registrados para esta fecha.
+            <Heart className="mx-auto text-gray-300 mb-4" size={48} />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Sin síntomas registrados
+            </h3>
+            <p className="text-sm text-gray-600">
+              {partnerData.name} no ha registrado síntomas para esta fecha.
             </p>
           </div>
         )}
