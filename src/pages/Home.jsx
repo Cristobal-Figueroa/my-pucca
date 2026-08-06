@@ -129,7 +129,7 @@ const Home = () => {
         {/* Círculo de fases del ciclo */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">Fases del ciclo</h3>
-          <div className="relative w-80 h-80 mx-auto flex items-center justify-center">
+          <div className="relative w-full h-80 mx-auto flex items-center justify-center">
             {/* Círculo base con proporciones reales */}
             <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
               {(() => {
