@@ -5,11 +5,12 @@ import RegisterMan from './pages/RegisterMan';
 import ManHome from './pages/ManHome';
 import ManCalendar from './pages/ManCalendar';
 import ManTips from './pages/ManTips';
-import ManSymptoms from './pages/ManSymptoms';
+import ManSymptomsOwn from './pages/ManSymptomsOwn';
+import ManSymptomsPartner from './pages/ManSymptomsPartner';
 import Home from './pages/Home';
 import Calendar from './pages/Calendar';
-import Ovulation from './pages/Ovulation';
-import Symptoms from './pages/Symptoms';
+import El from './pages/El';
+import Ella from './pages/Ella';
 import Settings from './pages/Settings';
 import Partner from './pages/Partner';
 import Tips from './pages/Tips';
@@ -23,11 +24,12 @@ function App() {
       <Route path="/man-home" element={<ManHome />} />
       <Route path="/man-calendar" element={<ManCalendar />} />
       <Route path="/man-tips" element={<ManTips />} />
-      <Route path="/man-symptoms" element={<ManSymptoms />} />
+      <Route path="/man-symptoms" element={<ManSymptomsOwn />} />
+      <Route path="/man-symptoms-partner" element={<ManSymptomsPartner />} />
       <Route path="/home" element={<Home />} />
       <Route path="/calendar" element={<Calendar />} />
-      <Route path="/ovulation" element={<Ovulation />} />
-      <Route path="/symptoms" element={<Symptoms />} />
+      <Route path="/el" element={<El />} />
+      <Route path="/ella" element={<Ella />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/partner" element={<Partner />} />
       <Route path="/tips" element={<Tips />} />

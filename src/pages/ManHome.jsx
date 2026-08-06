@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Calendar, Droplets, Lightbulb, User, RefreshCw, Activity } from 'lucide-react';
 import { getProfile, getPartnerProfile, parseLocalDate } from '../utils/storage';
-import { getCyclePhase, CYCLE_PHASES, getPhaseInfo, getDaysUntilNextPeriod, getDaysUntilOvulation } from '../utils/cycleCalculations';
-import { differenceInDays } from 'date-fns';
+import { getCyclePhase, CYCLE_PHASES, getPhaseInfo, getDaysUntilNextPeriod, getDaysUntilOvulation, calculateNextPeriod, calculateOvulationDate } from '../utils/cycleCalculations';
+import { differenceInDays, format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import Layout from '../components/Layout';
 
 const ManHome = () => {
@@ -14,6 +15,8 @@ const ManHome = () => {
   const [cycleDay, setCycleDay] = useState(0);
   const [daysUntilPeriod, setDaysUntilPeriod] = useState(0);
   const [daysUntilOvulation, setDaysUntilOvulation] = useState(0);
+  const [nextPeriodDate, setNextPeriodDate] = useState(null);
+  const [nextOvulationDate, setNextOvulationDate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -54,6 +57,18 @@ const ManHome = () => {
               
               const daysUntilOvulationCalc = getDaysUntilOvulation(parseLocalDate(partnerProfile.last_period_start), partnerProfile.cycle_length);
               setDaysUntilOvulation(daysUntilOvulationCalc);
+              
+              // Calcular fechas específicas
+              setNextPeriodDate(calculateNextPeriod(parseLocalDate(partnerProfile.last_period_start), partnerProfile.cycle_length));
+              
+              // Calcular próxima ovulación (si ya pasó la del ciclo actual, usar la del siguiente)
+              const currentOvulation = calculateOvulationDate(parseLocalDate(partnerProfile.last_period_start), partnerProfile.cycle_length);
+              if (differenceInDays(currentOvulation, new Date()) < 0) {
+                const nextPeriod = calculateNextPeriod(parseLocalDate(partnerProfile.last_period_start), partnerProfile.cycle_length);
+                setNextOvulationDate(calculateOvulationDate(nextPeriod, partnerProfile.cycle_length));
+              } else {
+                setNextOvulationDate(currentOvulation);
+              }
             } else {
               // Si no se encuentra la pareja, mostrar error
               setError('No se encontró el perfil de tu pareja. Verifica el código.');
@@ -173,6 +188,11 @@ const ManHome = () => {
             <p className="text-xs text-gray-500 mt-1">
               {daysUntilPeriod > 0 ? 'días restantes' : 'día del periodo'}
             </p>
+            {nextPeriodDate && (
+              <p className="text-xs text-gray-400 mt-1">
+                {format(nextPeriodDate, "d 'de' MMMM", { locale: es })}
+              </p>
+            )}
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-sm">
@@ -186,6 +206,11 @@ const ManHome = () => {
             <p className="text-xs text-gray-500 mt-1">
               {daysUntilOvulation > 0 ? 'días restantes' : 'día de ovulación'}
             </p>
+            {nextOvulationDate && (
+              <p className="text-xs text-gray-400 mt-1">
+                {format(nextOvulationDate, "d 'de' MMMM", { locale: es })}
+              </p>
+            )}
           </div>
         </div>
 

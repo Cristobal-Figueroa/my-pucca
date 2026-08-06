@@ -20,6 +20,8 @@ const Home = () => {
   const [currentPhase, setCurrentPhase] = useState(null);
   const [daysUntilPeriod, setDaysUntilPeriod] = useState(0);
   const [daysUntilOvulation, setDaysUntilOvulation] = useState(0);
+  const [nextPeriodDate, setNextPeriodDate] = useState(null);
+  const [nextOvulationDate, setNextOvulationDate] = useState(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -44,6 +46,18 @@ const Home = () => {
         
         setDaysUntilPeriod(getDaysUntilNextPeriod(lastPeriodStart, savedProfile.cycleLength));
         setDaysUntilOvulation(getDaysUntilOvulation(lastPeriodStart, savedProfile.cycleLength));
+        
+        // Calcular fechas específicas
+        setNextPeriodDate(calculateNextPeriod(lastPeriodStart, savedProfile.cycleLength));
+        
+        // Calcular próxima ovulación (si ya pasó la del ciclo actual, usar la del siguiente)
+        const currentOvulation = calculateOvulationDate(lastPeriodStart, savedProfile.cycleLength);
+        if (differenceInDays(currentOvulation, today) < 0) {
+          const nextPeriod = calculateNextPeriod(lastPeriodStart, savedProfile.cycleLength);
+          setNextOvulationDate(calculateOvulationDate(nextPeriod, savedProfile.cycleLength));
+        } else {
+          setNextOvulationDate(currentOvulation);
+        }
       }
     };
     loadProfile();
@@ -110,6 +124,11 @@ const Home = () => {
             <p className="text-xs text-gray-500 mt-1">
               {daysUntilPeriod > 0 ? 'días restantes' : 'día del periodo'}
             </p>
+            {nextPeriodDate && (
+              <p className="text-xs text-gray-400 mt-1">
+                {format(nextPeriodDate, "d 'de' MMMM", { locale: es })}
+              </p>
+            )}
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-sm">
@@ -123,6 +142,11 @@ const Home = () => {
             <p className="text-xs text-gray-500 mt-1">
               {daysUntilOvulation > 0 ? 'días restantes' : 'día de ovulación'}
             </p>
+            {nextOvulationDate && (
+              <p className="text-xs text-gray-400 mt-1">
+                {format(nextOvulationDate, "d 'de' MMMM", { locale: es })}
+              </p>
+            )}
           </div>
         </div>
 

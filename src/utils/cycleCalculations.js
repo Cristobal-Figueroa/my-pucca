@@ -10,8 +10,13 @@ export const CYCLE_PHASES = {
 
 // Calcular la fecha de ovulación basada en el último periodo
 export const calculateOvulationDate = (lastPeriodStart, cycleLength) => {
+  // Usar fecha local para evitar problemas de zona horaria
+  const year = lastPeriodStart.getFullYear();
+  const month = lastPeriodStart.getMonth();
+  const day = lastPeriodStart.getDate();
+  const localDate = new Date(year, month, day);
   const ovulationDay = cycleLength - 14;
-  return addDays(lastPeriodStart, ovulationDay);
+  return addDays(localDate, ovulationDay);
 };
 
 // Calcular la ventana fértil (5 días antes de la ovulación hasta 1 día después)
@@ -23,7 +28,12 @@ export const calculateFertileWindow = (ovulationDate) => {
 
 // Calcular la fecha del próximo periodo
 export const calculateNextPeriod = (lastPeriodStart, cycleLength) => {
-  return addDays(lastPeriodStart, cycleLength);
+  // Usar fecha local para evitar problemas de zona horaria
+  const year = lastPeriodStart.getFullYear();
+  const month = lastPeriodStart.getMonth();
+  const day = lastPeriodStart.getDate();
+  const localDate = new Date(year, month, day);
+  return addDays(localDate, cycleLength);
 };
 
 // Determinar en qué fase del ciclo está una fecha específica
