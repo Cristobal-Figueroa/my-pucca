@@ -141,6 +141,107 @@ const El = () => {
     }
   };
 
+  const getGeneralState = () => {
+    if (!partnerSymptoms) return { state: 'Sin datos', color: 'bg-gray-100 text-gray-800' };
+    
+    let score = 0;
+    let count = 0;
+
+    if (partnerSymptoms.mood === 'happy' || partnerSymptoms.mood === 'energetic' || partnerSymptoms.mood === 'confident' || partnerSymptoms.mood === 'calm') {
+      score += 2;
+    } else if (partnerSymptoms.mood === 'sad' || partnerSymptoms.mood === 'anxious' || partnerSymptoms.mood === 'irritable' || partnerSymptoms.mood === 'stressed' || partnerSymptoms.mood === 'tired') {
+      score -= 1;
+    }
+    count++;
+
+    if (partnerSymptoms.energy === 'very_high' || partnerSymptoms.energy === 'high') {
+      score += 2;
+    } else if (partnerSymptoms.energy === 'low' || partnerSymptoms.energy === 'very_low') {
+      score -= 1;
+    }
+    count++;
+
+    if (partnerSymptoms.sleep === 'excellent' || partnerSymptoms.sleep === 'good') {
+      score += 1;
+    } else if (partnerSymptoms.sleep === 'poor' || partnerSymptoms.sleep === 'terrible') {
+      score -= 1;
+    }
+    count++;
+
+    if (partnerSymptoms.pain === 'severe') {
+      score -= 2;
+    } else if (partnerSymptoms.pain === 'moderate') {
+      score -= 1;
+    }
+    count++;
+
+    if (partnerSymptoms.headache === 'severe' || partnerSymptoms.headache === 'migraine') {
+      score -= 2;
+    } else if (partnerSymptoms.headache === 'moderate') {
+      score -= 1;
+    }
+    count++;
+
+    if (partnerSymptoms.digestion === 'nausea' || partnerSymptoms.digestion === 'indigestion') {
+      score -= 1;
+    }
+    count++;
+
+    const avgScore = count > 0 ? score / count : 0;
+
+    if (avgScore >= 1) {
+      return { state: 'Excelente', color: 'bg-green-100 text-green-800' };
+    } else if (avgScore >= 0.3) {
+      return { state: 'Bien', color: 'bg-blue-100 text-blue-800' };
+    } else if (avgScore >= -0.3) {
+      return { state: 'Regular', color: 'bg-yellow-100 text-yellow-800' };
+    } else if (avgScore >= -1) {
+      return { state: 'Cansado', color: 'bg-orange-100 text-orange-800' };
+    } else {
+      return { state: 'Necesita descanso', color: 'bg-red-100 text-red-800' };
+    }
+  };
+
+  const getPersonalizedAdvice = () => {
+    if (!partnerSymptoms) return 'Sin datos para dar consejo';
+
+    const advice = [];
+
+    if (partnerSymptoms.mood === 'stressed' || partnerSymptoms.mood === 'anxious') {
+      advice.push('Tal vez deberías ayudarle a relajarse con un masaje o tiempo tranquilo juntos.');
+    }
+
+    if (partnerSymptoms.energy === 'low' || partnerSymptoms.energy === 'very_low') {
+      advice.push('Tal vez deberías sugerirle descansar y evitar actividades intensas hoy.');
+    }
+
+    if (partnerSymptoms.sleep === 'poor' || partnerSymptoms.sleep === 'terrible') {
+      advice.push('Tal vez deberías ayudarle a tener una noche de descanso mejor.');
+    }
+
+    if (partnerSymptoms.pain === 'moderate' || partnerSymptoms.pain === 'severe') {
+      advice.push('Tal vez deberías ofrecerle apoyo y medicamentos si los necesita.');
+    }
+
+    if (partnerSymptoms.headache === 'moderate' || partnerSymptoms.headache === 'severe' || partnerSymptoms.headache === 'migraine') {
+      advice.push('Tal vez deberías mantener el ambiente tranquilo y con poca luz.');
+    }
+
+    if (partnerSymptoms.libido === 'very_high' || partnerSymptoms.libido === 'high') {
+      advice.push('Tal vez deberías aprovechar este momento para intimidad especial.');
+    }
+
+    if (partnerSymptoms.mood === 'happy' || partnerSymptoms.mood === 'energetic') {
+      advice.push('Tal vez deberías planear algo divertido juntos mientras tiene energía.');
+    }
+
+    if (advice.length === 0) {
+      return 'Todo parece estar bien. Tal vez deberías simplemente disfrutar el tiempo juntos.';
+    }
+
+    return advice[0];
+  };
+
   if (loading) {
     return (
       <Layout title="Cargando..." showBackButton={false} showSettings={false}>
@@ -203,6 +304,24 @@ const El = () => {
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent cursor-pointer"
             max={new Date().toISOString().split('T')[0]}
           />
+        </div>
+
+        {/* Card de estado general */}
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl p-6 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm opacity-90">Estado de hoy</p>
+              <p className="text-2xl font-bold">{partnerData.name}</p>
+            </div>
+            <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getGeneralState().color}`}>
+              {getGeneralState().state}
+            </span>
+          </div>
+          <div className="bg-white/20 rounded-xl p-4">
+            <p className="text-sm">
+              💡 {getPersonalizedAdvice()}
+            </p>
+          </div>
         </div>
 
         {/* Estado de ánimo */}
