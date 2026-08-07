@@ -142,7 +142,7 @@ const El = () => {
   };
 
   const getGeneralState = () => {
-    if (!partnerSymptoms) return { state: 'Sin datos', color: 'bg-gray-100 text-gray-800' };
+    if (!partnerSymptoms) return { state: 'Sin datos', color: 'bg-gray-100 text-gray-800', bgColor: 'bg-gray-100', borderColor: 'border-gray-300' };
     
     let score = 0;
     let count = 0;
@@ -190,15 +190,15 @@ const El = () => {
     const avgScore = count > 0 ? score / count : 0;
 
     if (avgScore >= 1) {
-      return { state: 'Excelente', color: 'bg-green-100 text-green-800' };
+      return { state: 'Excelente', color: 'bg-green-100 text-green-800', bgColor: 'bg-green-100', borderColor: 'border-green-300' };
     } else if (avgScore >= 0.3) {
-      return { state: 'Bien', color: 'bg-blue-100 text-blue-800' };
+      return { state: 'Bien', color: 'bg-blue-100 text-blue-800', bgColor: 'bg-blue-100', borderColor: 'border-blue-300' };
     } else if (avgScore >= -0.3) {
-      return { state: 'Regular', color: 'bg-yellow-100 text-yellow-800' };
+      return { state: 'Regular', color: 'bg-yellow-100 text-yellow-800', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-300' };
     } else if (avgScore >= -1) {
-      return { state: 'Cansado', color: 'bg-orange-100 text-orange-800' };
+      return { state: 'Cansado', color: 'bg-orange-100 text-orange-800', bgColor: 'bg-orange-100', borderColor: 'border-orange-300' };
     } else {
-      return { state: 'Necesita descanso', color: 'bg-red-100 text-red-800' };
+      return { state: 'Necesita descanso', color: 'bg-red-100 text-red-800', bgColor: 'bg-red-100', borderColor: 'border-red-300' };
     }
   };
 
@@ -307,17 +307,17 @@ const El = () => {
         </div>
 
         {/* Card de estado general */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl p-6 text-white shadow-lg">
+        <div className={`${getGeneralState().bgColor} bg-opacity-70 rounded-2xl p-6 text-gray-900 shadow-lg backdrop-blur-sm border-2 ${getGeneralState().borderColor}`}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm opacity-90">Estado de hoy</p>
+              <p className="text-sm opacity-75">Estado de hoy</p>
               <p className="text-2xl font-bold">{partnerData.name}</p>
             </div>
             <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getGeneralState().color}`}>
               {getGeneralState().state}
             </span>
           </div>
-          <div className="bg-white/20 rounded-xl p-4">
+          <div className="bg-white/50 rounded-xl p-4">
             <p className="text-sm">
               💡 {getPersonalizedAdvice()}
             </p>

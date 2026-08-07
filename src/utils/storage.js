@@ -104,11 +104,11 @@ export const deleteProfile = () => {
   }
 };
 
-// Periodos
+// Periodos - ya no se guardan en localStorage, solo en DB
 export const savePeriods = async (periods) => {
   try {
-    localStorage.setItem(STORAGE_KEYS.PERIODS, JSON.stringify(periods));
-    return true;
+    // Solo guardar en DB, no en localStorage
+    return await savePeriodsToDB(periods);
   } catch (error) {
     console.error('Error saving periods:', error);
     return false;
@@ -137,8 +137,15 @@ export const savePeriodsToDB = async (periods) => {
 
 export const getPeriods = async () => {
   try {
-    const periods = localStorage.getItem(STORAGE_KEYS.PERIODS);
-    return periods ? JSON.parse(periods) : [];
+    // Obtener periodos desde DB
+    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    if (!userId) return [];
+
+    const response = await apiRequest(`${API_ENDPOINTS.GET_PERIODS}?user_id=${userId}`);
+    if (response.success && response.periods) {
+      return response.periods;
+    }
+    return [];
   } catch (error) {
     console.error('Error getting periods:', error);
     return [];
@@ -147,23 +154,19 @@ export const getPeriods = async () => {
 
 export const addPeriod = async (period) => {
   try {
-    const periods = await getPeriods();
-    periods.push(period);
-    await savePeriods(periods);
-    
-    // Enviar al backend
+    // Solo enviar al backend, no usar localStorage
     const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
-    if (userId) {
-      await apiRequest(API_ENDPOINTS.SAVE_PERIOD, {
-        method: 'POST',
-        body: JSON.stringify({
-          user_id: userId,
-          date: period.date,
-          notes: period.notes || ''
-        })
-      });
-    }
-    
+    if (!userId) return false;
+
+    await apiRequest(API_ENDPOINTS.SAVE_PERIOD, {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        date: period.date,
+        notes: period.notes || ''
+      })
+    });
+
     return true;
   } catch (error) {
     console.error('Error adding period:', error);
@@ -173,28 +176,20 @@ export const addPeriod = async (period) => {
 
 export const updatePeriod = async (periodId, updatedPeriod) => {
   try {
-    const periods = await getPeriods();
-    const index = periods.findIndex(p => p.id === periodId);
-    if (index !== -1) {
-      periods[index] = updatedPeriod;
-      await savePeriods(periods);
-      
-      // Enviar al backend
-      const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
-      if (userId) {
-        await apiRequest(API_ENDPOINTS.SAVE_PERIOD, {
-          method: 'POST',
-          body: JSON.stringify({
-            user_id: userId,
-            date: updatedPeriod.date,
-            notes: updatedPeriod.notes || ''
-          })
-        });
-      }
-      
-      return true;
-    }
-    return false;
+    // Solo enviar al backend, no usar localStorage
+    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    if (!userId) return false;
+
+    await apiRequest(API_ENDPOINTS.SAVE_PERIOD, {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        date: updatedPeriod.date,
+        notes: updatedPeriod.notes || ''
+      })
+    });
+
+    return true;
   } catch (error) {
     console.error('Error updating period:', error);
     return false;
@@ -203,14 +198,9 @@ export const updatePeriod = async (periodId, updatedPeriod) => {
 
 export const deletePeriod = async (periodId) => {
   try {
-    const periods = await getPeriods();
-    const periodToDelete = periods.find(p => p.id === periodId);
-    const filteredPeriods = periods.filter(p => p.id !== periodId);
-    await savePeriods(filteredPeriods);
-    
     // Nota: No hay endpoint para eliminar periodos en el backend
     // Se maneja actualizando el registro con notas vacías o similar si es necesario
-    
+    // Por ahora, solo retornamos true
     return true;
   } catch (error) {
     console.error('Error deleting period:', error);
@@ -218,11 +208,11 @@ export const deletePeriod = async (periodId) => {
   }
 };
 
-// Síntomas
+// Síntomas - ya no se guardan en localStorage, solo en DB
 export const saveSymptoms = async (symptoms) => {
   try {
-    localStorage.setItem(STORAGE_KEYS.SYMPTOMS, JSON.stringify(symptoms));
-    return true;
+    // Solo guardar en DB, no en localStorage
+    return await saveSymptomsToDB(symptoms);
   } catch (error) {
     console.error('Error saving symptoms:', error);
     return false;
@@ -251,8 +241,15 @@ export const saveSymptomsToDB = async (symptoms) => {
 
 export const getSymptoms = async () => {
   try {
-    const symptoms = localStorage.getItem(STORAGE_KEYS.SYMPTOMS);
-    return symptoms ? JSON.parse(symptoms) : [];
+    // Obtener síntomas desde DB
+    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    if (!userId) return [];
+
+    const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}`);
+    if (response.success && response.symptoms) {
+      return response.symptoms;
+    }
+    return [];
   } catch (error) {
     console.error('Error getting symptoms:', error);
     return [];
@@ -261,32 +258,28 @@ export const getSymptoms = async () => {
 
 export const addSymptom = async (symptom) => {
   try {
-    const symptoms = await getSymptoms();
-    symptoms.push(symptom);
-    await saveSymptoms(symptoms);
-    
-    // Enviar al backend
+    // Solo enviar al backend, no usar localStorage
     const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
-    if (userId) {
-      await apiRequest(API_ENDPOINTS.SAVE_SYMPTOM, {
-        method: 'POST',
-        body: JSON.stringify({
-          user_id: userId,
-          date: symptom.date,
-          mood: symptom.mood || null,
-          libido: symptom.libido || null,
-          cravings: symptom.cravings || null,
-          energy: symptom.energy || null,
-          sleep: symptom.sleep || null,
-          pain: symptom.pain || null,
-          skin: symptom.skin || null,
-          digestion: symptom.digestion || null,
-          headache: symptom.headache || null,
-          notes: symptom.notes || ''
-        })
-      });
-    }
-    
+    if (!userId) return false;
+
+    await apiRequest(API_ENDPOINTS.SAVE_SYMPTOM, {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        date: symptom.date,
+        mood: symptom.mood || null,
+        libido: symptom.libido || null,
+        cravings: symptom.cravings || null,
+        energy: symptom.energy || null,
+        sleep: symptom.sleep || null,
+        pain: symptom.pain || null,
+        skin: symptom.skin || null,
+        digestion: symptom.digestion || null,
+        headache: symptom.headache || null,
+        notes: symptom.notes || ''
+      })
+    });
+
     return true;
   } catch (error) {
     console.error('Error adding symptom:', error);
@@ -296,37 +289,29 @@ export const addSymptom = async (symptom) => {
 
 export const updateSymptom = async (symptomId, updatedSymptom) => {
   try {
-    const symptoms = await getSymptoms();
-    const index = symptoms.findIndex(s => s.id === symptomId);
-    if (index !== -1) {
-      symptoms[index] = updatedSymptom;
-      await saveSymptoms(symptoms);
-      
-      // Enviar al backend
-      const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
-      if (userId) {
-        await apiRequest(API_ENDPOINTS.SAVE_SYMPTOM, {
-          method: 'POST',
-          body: JSON.stringify({
-            user_id: userId,
-            date: updatedSymptom.date,
-            mood: updatedSymptom.mood || null,
-            libido: updatedSymptom.libido || null,
-            cravings: updatedSymptom.cravings || null,
-            energy: updatedSymptom.energy || null,
-            sleep: updatedSymptom.sleep || null,
-            pain: updatedSymptom.pain || null,
-            skin: updatedSymptom.skin || null,
-            digestion: updatedSymptom.digestion || null,
-            headache: updatedSymptom.headache || null,
-            notes: updatedSymptom.notes || ''
-          })
-        });
-      }
-      
-      return true;
-    }
-    return false;
+    // Solo enviar al backend, no usar localStorage
+    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    if (!userId) return false;
+
+    await apiRequest(API_ENDPOINTS.SAVE_SYMPTOM, {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        date: updatedSymptom.date,
+        mood: updatedSymptom.mood || null,
+        libido: updatedSymptom.libido || null,
+        cravings: updatedSymptom.cravings || null,
+        energy: updatedSymptom.energy || null,
+        sleep: updatedSymptom.sleep || null,
+        pain: updatedSymptom.pain || null,
+        skin: updatedSymptom.skin || null,
+        digestion: updatedSymptom.digestion || null,
+        headache: updatedSymptom.headache || null,
+        notes: updatedSymptom.notes || ''
+      })
+    });
+
+    return true;
   } catch (error) {
     console.error('Error updating symptom:', error);
     return false;
@@ -335,13 +320,9 @@ export const updateSymptom = async (symptomId, updatedSymptom) => {
 
 export const deleteSymptom = async (symptomId) => {
   try {
-    const symptoms = await getSymptoms();
-    const filteredSymptoms = symptoms.filter(s => s.id !== symptomId);
-    await saveSymptoms(filteredSymptoms);
-    
     // Nota: No hay endpoint para eliminar síntomas en el backend
     // Se maneja actualizando el registro con valores null si es necesario
-    
+    // Por ahora, solo retornamos true
     return true;
   } catch (error) {
     console.error('Error deleting symptom:', error);
@@ -349,14 +330,42 @@ export const deleteSymptom = async (symptomId) => {
   }
 };
 
-// Obtener síntomas por fecha
+// Obtener síntomas por fecha desde DB
 export const getSymptomsByDate = async (date) => {
   try {
-    const symptoms = await getSymptoms();
-    const dateStr = date.toISOString().split('T')[0];
-    return symptoms.filter(s => s.date === dateStr);
+    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    if (!userId) return [];
+
+    // Usar fecha local para evitar problemas de zona horaria
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}&date=${dateStr}`);
+    if (response.success && response.symptoms) {
+      return response.symptoms;
+    }
+    return [];
   } catch (error) {
     console.error('Error getting symptoms by date:', error);
+    return [];
+  }
+};
+
+// Obtener todos los síntomas del usuario desde DB
+export const getAllSymptoms = async () => {
+  try {
+    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    if (!userId) return [];
+
+    const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}`);
+    if (response.success && response.symptoms) {
+      return response.symptoms;
+    }
+    return [];
+  } catch (error) {
+    console.error('Error getting all symptoms:', error);
     return [];
   }
 };

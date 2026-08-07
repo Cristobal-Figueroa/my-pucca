@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Smile, Flame, Utensils, Coffee, Trash2, Moon, Zap, Droplet, Activity, Headphones } from 'lucide-react';
-import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom } from '../utils/storage';
+import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom, getPartnerProfile, getPartnerAllSymptoms } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Modal from '../components/Modal';
@@ -10,6 +10,8 @@ import Layout from '../components/Layout';
 const Ella = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [partnerData, setPartnerData] = useState(null);
+  const [isManViewing, setIsManViewing] = useState(false);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [symptoms, setSymptoms] = useState({
     mood: '',
@@ -111,7 +113,31 @@ const Ella = () => {
       const savedProfile = await getProfile();
       if (savedProfile) {
         setProfile(savedProfile);
-        loadSymptomsForDate(selectedDate);
+        
+        // Detectar si es hombre viendo la página de Ella
+        if (savedProfile.gender === 'man') {
+          setIsManViewing(true);
+          // Cargar perfil de la pareja
+          const partnerCodeToUse = savedProfile.connectedPartnerCode || savedProfile.partnerCode;
+          if (partnerCodeToUse) {
+            const partnerProfile = await getPartnerProfile(partnerCodeToUse);
+            if (partnerProfile) {
+              setPartnerData(partnerProfile);
+              // Cargar síntomas después de cargar partnerData
+              loadSymptomsForDate(selectedDate, partnerProfile.partner_code);
+            } else {
+              // Si no hay partnerData, cargar síntomas vacíos
+              loadSymptomsForDate(selectedDate, null);
+            }
+          } else {
+            // Si no hay partnerCode, cargar síntomas vacíos
+            loadSymptomsForDate(selectedDate, null);
+          }
+        } else {
+          setIsManViewing(false);
+          // Si es mujer, cargar sus propios síntomas
+          loadSymptomsForDate(selectedDate, null);
+        }
       } else {
         navigate('/settings');
       }
@@ -119,8 +145,19 @@ const Ella = () => {
     loadProfile();
   }, [selectedDate]);
 
-  const loadSymptomsForDate = async (date) => {
-    const symptomsForDate = await getSymptomsByDate(new Date(date));
+  const loadSymptomsForDate = async (date, partnerCode = null) => {
+    let symptomsForDate = [];
+    
+    if (isManViewing && partnerCode) {
+      // Si es hombre, cargar síntomas de la pareja usando el partnerCode pasado
+      const allPartnerSymptoms = await getPartnerAllSymptoms(partnerCode);
+      const dateStr = date.toISOString().split('T')[0];
+      symptomsForDate = allPartnerSymptoms.filter(s => s.date === dateStr);
+    } else {
+      // Si es mujer, cargar sus propios síntomas
+      symptomsForDate = await getSymptomsByDate(new Date(date));
+    }
+    
     setSavedSymptoms(symptomsForDate);
     
     if (symptomsForDate.length > 0) {
@@ -223,6 +260,14 @@ const Ella = () => {
           />
         </div>
 
+        {isManViewing && partnerData && (
+          <div className="bg-pink-50 rounded-2xl p-4 text-center">
+            <p className="text-sm text-pink-800">
+              Viendo síntomas de <span className="font-semibold">{partnerData.name}</span>
+            </p>
+          </div>
+        )}
+
         {/* Estado de ánimo */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center mb-4">
@@ -233,10 +278,13 @@ const Ella = () => {
             {moodOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setSymptoms({ ...symptoms, mood: option.value })}
+                onClick={() => !isManViewing && setSymptoms({ ...symptoms, mood: option.value })}
+                disabled={isManViewing}
                 className={`p-3 rounded-xl font-medium transition-all ${
                   symptoms.mood === option.value
                     ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : isManViewing
+                    ? 'bg-gray-50 text-gray-400'
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -256,10 +304,13 @@ const Ella = () => {
             {libidoOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setSymptoms({ ...symptoms, libido: option.value })}
+                onClick={() => !isManViewing && setSymptoms({ ...symptoms, libido: option.value })}
+                disabled={isManViewing}
                 className={`p-3 rounded-xl font-medium transition-all ${
                   symptoms.libido === option.value
                     ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : isManViewing
+                    ? 'bg-gray-50 text-gray-400'
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -279,10 +330,13 @@ const Ella = () => {
             {cravingsOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setSymptoms({ ...symptoms, cravings: option.value })}
+                onClick={() => !isManViewing && setSymptoms({ ...symptoms, cravings: option.value })}
+                disabled={isManViewing}
                 className={`p-3 rounded-xl font-medium transition-all ${
                   symptoms.cravings === option.value
                     ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : isManViewing
+                    ? 'bg-gray-50 text-gray-400'
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -302,10 +356,13 @@ const Ella = () => {
             {energyOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setSymptoms({ ...symptoms, energy: option.value })}
+                onClick={() => !isManViewing && setSymptoms({ ...symptoms, energy: option.value })}
+                disabled={isManViewing}
                 className={`p-3 rounded-xl font-medium transition-all ${
                   symptoms.energy === option.value
                     ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : isManViewing
+                    ? 'bg-gray-50 text-gray-400'
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -325,10 +382,13 @@ const Ella = () => {
             {sleepOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setSymptoms({ ...symptoms, sleep: option.value })}
+                onClick={() => !isManViewing && setSymptoms({ ...symptoms, sleep: option.value })}
+                disabled={isManViewing}
                 className={`p-3 rounded-xl font-medium transition-all ${
                   symptoms.sleep === option.value
                     ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : isManViewing
+                    ? 'bg-gray-50 text-gray-400'
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -348,10 +408,13 @@ const Ella = () => {
             {painOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setSymptoms({ ...symptoms, pain: option.value })}
+                onClick={() => !isManViewing && setSymptoms({ ...symptoms, pain: option.value })}
+                disabled={isManViewing}
                 className={`p-3 rounded-xl font-medium transition-all ${
                   symptoms.pain === option.value
                     ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : isManViewing
+                    ? 'bg-gray-50 text-gray-400'
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -371,10 +434,13 @@ const Ella = () => {
             {skinOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setSymptoms({ ...symptoms, skin: option.value })}
+                onClick={() => !isManViewing && setSymptoms({ ...symptoms, skin: option.value })}
+                disabled={isManViewing}
                 className={`p-3 rounded-xl font-medium transition-all ${
                   symptoms.skin === option.value
                     ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : isManViewing
+                    ? 'bg-gray-50 text-gray-400'
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -394,10 +460,13 @@ const Ella = () => {
             {digestionOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setSymptoms({ ...symptoms, digestion: option.value })}
+                onClick={() => !isManViewing && setSymptoms({ ...symptoms, digestion: option.value })}
+                disabled={isManViewing}
                 className={`p-3 rounded-xl font-medium transition-all ${
                   symptoms.digestion === option.value
                     ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : isManViewing
+                    ? 'bg-gray-50 text-gray-400'
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -417,10 +486,13 @@ const Ella = () => {
             {headacheOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setSymptoms({ ...symptoms, headache: option.value })}
+                onClick={() => !isManViewing && setSymptoms({ ...symptoms, headache: option.value })}
+                disabled={isManViewing}
                 className={`p-3 rounded-xl font-medium transition-all ${
                   symptoms.headache === option.value
                     ? `${option.color} ring-2 ring-pink-500 ring-offset-2`
+                    : isManViewing
+                    ? 'bg-gray-50 text-gray-400'
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -437,21 +509,26 @@ const Ella = () => {
           </label>
           <textarea
             value={symptoms.notes}
-            onChange={(e) => setSymptoms({ ...symptoms, notes: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
+            onChange={(e) => !isManViewing && setSymptoms({ ...symptoms, notes: e.target.value })}
+            disabled={isManViewing}
+            className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none ${
+              isManViewing ? 'bg-gray-50 text-gray-400' : ''
+            }`}
             rows={3}
             placeholder="Agrega cualquier nota adicional..."
           />
         </div>
 
         {/* Botón guardar */}
-        <button
-          onClick={handleSave}
-          className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
-        >
-          <Heart size={20} />
-          <span>Guardar Síntomas</span>
-        </button>
+        {!isManViewing && (
+          <button
+            onClick={handleSave}
+            className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+          >
+            <Heart size={20} />
+            <span>Guardar Síntomas</span>
+          </button>
+        )}
 
         {/* Síntomas guardados del día */}
         {savedSymptoms.length > 0 && (

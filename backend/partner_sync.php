@@ -25,6 +25,11 @@ if ($result->num_rows > 0) {
     $partner = $result->fetch_assoc();
     $partner_user_id = $partner['user_id'];
     
+    // Verificar que no sea el mismo usuario
+    if ($partner_user_id === $user_id) {
+        sendError('No puedes sincronizarte contigo mismo', 400);
+    }
+    
     // Actualizar el perfil del hombre con el código de su pareja en connected_partner_code
     $stmt = $conn->prepare("UPDATE users SET connected_partner_code = ? WHERE user_id = ?");
     $stmt->bind_param("ss", $partner_code, $user_id);

@@ -30,9 +30,12 @@ const ManHome = () => {
         if (savedProfile && savedProfile.gender === 'man') {
           setProfile(savedProfile);
           
+          // Usar connectedPartnerCode primero, luego partnerCode
+          const partnerCodeToUse = savedProfile.connectedPartnerCode || savedProfile.partnerCode;
+          
           // Cargar datos reales de la pareja usando el partnerCode
-          if (savedProfile.partnerCode) {
-            const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+          if (partnerCodeToUse) {
+            const partnerProfile = await getPartnerProfile(partnerCodeToUse);
             if (partnerProfile) {
               setPartnerData(partnerProfile);
               
