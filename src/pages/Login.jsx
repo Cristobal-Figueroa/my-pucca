@@ -56,7 +56,7 @@ const Login = () => {
           periodLength: response.user.period_length,
           lastPeriodStart: response.user.last_period_start,
           gender: response.user.gender,
-          partnerCode: response.user.partner_code,
+          partnerCode: response.user.gender === 'woman' ? response.user.partner_code : null,
           connectedPartnerCode: response.user.connected_partner_code
         };
 

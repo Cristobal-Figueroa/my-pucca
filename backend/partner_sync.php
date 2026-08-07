@@ -30,12 +30,25 @@ if ($result->num_rows > 0) {
         sendError('No puedes sincronizarte contigo mismo', 400);
     }
     
+    // Verificar que el usuario actual es hombre
+    $stmt = $conn->prepare("SELECT gender FROM users WHERE user_id = ?");
+    $stmt->bind_param("s", $user_id);
+    $stmt->execute();
+    $user_result = $stmt->get_result();
+    $user_data = $user_result->fetch_assoc();
+    
+    if ($user_data['gender'] !== 'man') {
+        sendError('Solo los hombres pueden sincronizarse con el código de una mujer', 400);
+    }
+    
     // Actualizar el perfil del hombre con el código de su pareja en connected_partner_code
+    // El hombre NO tiene partner_code, solo connected_partner_code con el código de la mujer
     $stmt = $conn->prepare("UPDATE users SET connected_partner_code = ? WHERE user_id = ?");
     $stmt->bind_param("ss", $partner_code, $user_id);
     $stmt->execute();
     
-    // Generar un código para el hombre si no tiene uno
+    // Guardar el código del hombre en el connected_partner_code de la mujer para sincronización bidireccional
+    // Primero generamos un código para el hombre si no tiene
     $stmt = $conn->prepare("SELECT partner_code FROM users WHERE user_id = ?");
     $stmt->bind_param("s", $user_id);
     $stmt->execute();
@@ -54,7 +67,7 @@ if ($result->num_rows > 0) {
         $stmt->execute();
     }
     
-    // Guardar el código del hombre en el connected_partner_code de la mujer para sincronización bidireccional
+    // Guardar el código del hombre en el connected_partner_code de la mujer
     $stmt = $conn->prepare("UPDATE users SET connected_partner_code = ? WHERE user_id = ?");
     $stmt->bind_param("ss", $man_partner_code, $partner_user_id);
     $stmt->execute();
@@ -62,8 +75,7 @@ if ($result->num_rows > 0) {
     sendResponse([
         'success' => true,
         'message' => 'Sincronización exitosa',
-        'partner' => $partner,
-        'man_partner_code' => $man_partner_code
+        'partner' => $partner
     ]);
 } else {
     sendError('Código de pareja no válido', 404);

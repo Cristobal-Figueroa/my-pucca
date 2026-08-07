@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Smile, Flame, Utensils, Moon, Zap, Droplet, Activity, Headphones, FileText } from 'lucide-react';
-import { getProfile, getPartnerProfile, getPartnerAllSymptoms } from '../utils/storage';
+import { getProfile, getPartnerProfile, getPartnerProfileByUserId, getPartnerAllSymptoms } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Layout from '../components/Layout';
@@ -102,22 +102,17 @@ const El = () => {
         if (savedProfile && savedProfile.gender === 'woman') {
           setProfile(savedProfile);
           
-          // Usar connected_partner_code para buscar al hombre conectado
-          const partnerCodeToUse = savedProfile.connectedPartnerCode || savedProfile.partnerCode;
-          
-          if (partnerCodeToUse) {
-            const partnerProfile = await getPartnerProfile(partnerCodeToUse);
-            if (partnerProfile && partnerProfile.gender === 'man') {
+          // Las mujeres usan connectedPartnerCode que contiene el partner_code del hombre
+          const partnerCode = savedProfile.connectedPartnerCode;
+          if (partnerCode) {
+            // Obtener el perfil del hombre usando su partner_code
+            const partnerProfile = await getPartnerProfile(partnerCode);
+            if (partnerProfile) {
               setPartnerData(partnerProfile);
-              loadPartnerSymptomsForDate(selectedDate, partnerCodeToUse);
-            } else {
-              setError('Tu pareja aún no se ha conectado. Pídele que ingrese tu código en Ajustes.');
-              setPartnerData(null);
+              loadPartnerSymptomsForDate(selectedDate, partnerCode);
             }
-          } else {
-            setError('Tu pareja aún no se ha conectado. Pídele que ingrese tu código en Ajustes.');
           }
-        } else {
+        } else if (savedProfile && savedProfile.gender !== 'woman') {
           navigate('/man-home');
         }
       } catch (err) {

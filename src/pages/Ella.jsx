@@ -117,8 +117,8 @@ const Ella = () => {
         // Detectar si es hombre viendo la página de Ella
         if (savedProfile.gender === 'man') {
           setIsManViewing(true);
-          // Cargar perfil de la pareja
-          const partnerCodeToUse = savedProfile.connectedPartnerCode || savedProfile.partnerCode;
+          // Cargar perfil de la pareja usando connectedPartnerCode (código de la mujer)
+          const partnerCodeToUse = savedProfile.connectedPartnerCode;
           if (partnerCodeToUse) {
             const partnerProfile = await getPartnerProfile(partnerCodeToUse);
             if (partnerProfile) {

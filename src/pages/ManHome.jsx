@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Calendar, Droplets, Lightbulb, User, RefreshCw, Activity } from 'lucide-react';
-import { getProfile, getPartnerProfile, parseLocalDate } from '../utils/storage';
+import { getProfile, getPartnerProfile, parseLocalDate, syncPartner, apiRequest } from '../utils/storage';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
 import { getCyclePhase, CYCLE_PHASES, getPhaseInfo, getDaysUntilNextPeriod, getDaysUntilOvulation, calculateNextPeriod, calculateOvulationDate } from '../utils/cycleCalculations';
 import { differenceInDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -19,6 +20,9 @@ const ManHome = () => {
   const [nextOvulationDate, setNextOvulationDate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showPartnerCodeInput, setShowPartnerCodeInput] = useState(false);
+  const [partnerCodeInput, setPartnerCodeInput] = useState('');
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -30,8 +34,25 @@ const ManHome = () => {
         if (savedProfile && savedProfile.gender === 'man') {
           setProfile(savedProfile);
           
-          // Usar connectedPartnerCode primero, luego partnerCode
-          const partnerCodeToUse = savedProfile.connectedPartnerCode || savedProfile.partnerCode;
+          // Recargar el perfil desde el backend para obtener datos actualizados
+          const userId = localStorage.getItem('pucca_user_id');
+          let partnerCodeToUse = savedProfile.connectedPartnerCode;
+          
+          if (userId) {
+            try {
+              const response = await apiRequest(`${API_ENDPOINTS.GET_PROFILE}?user_id=${userId}`);
+              if (response.success && response.profile) {
+                const updatedProfile = {
+                  ...savedProfile,
+                  connectedPartnerCode: response.profile.connected_partner_code
+                };
+                setProfile(updatedProfile);
+                partnerCodeToUse = updatedProfile.connectedPartnerCode;
+              }
+            } catch (err) {
+              console.error('Error refreshing profile:', err);
+            }
+          }
           
           // Cargar datos reales de la pareja usando el partnerCode
           if (partnerCodeToUse) {
@@ -78,7 +99,7 @@ const ManHome = () => {
               setPartnerData(null);
             }
           } else {
-            setError('No tienes un código de pareja configurado.');
+            setShowPartnerCodeInput(true);
           }
         } else if (savedProfile && savedProfile.gender !== 'man') {
           navigate('/home');
@@ -95,6 +116,35 @@ const ManHome = () => {
     loadProfile();
   }, []);
 
+  const handleSyncPartner = async () => {
+    if (!partnerCodeInput.trim()) {
+      setError('Por favor ingresa el código de tu pareja');
+      return;
+    }
+
+    setSyncing(true);
+    setError(null);
+
+    try {
+      const success = await syncPartner(partnerCodeInput.trim());
+      if (success) {
+        // Recargar el perfil para obtener el connectedPartnerCode actualizado
+        const updatedProfile = await getProfile();
+        setProfile(updatedProfile);
+        setShowPartnerCodeInput(false);
+        setPartnerCodeInput('');
+        // Recargar la página para cargar los datos de la pareja
+        window.location.reload();
+      } else {
+        setError('No se pudo sincronizar. Verifica el código.');
+      }
+    } catch (err) {
+      setError('Error al sincronizar. Intenta nuevamente.');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   if (loading) {
     return (
       <Layout title="Cargando..." showBackButton={false} showSettings={false}>
@@ -102,6 +152,68 @@ const ManHome = () => {
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
             <p className="text-gray-600">Cargando datos de tu pareja...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (showPartnerCodeInput) {
+    return (
+      <Layout title="Sincronizar Pareja" showBackButton={false} showSettings={false}>
+        <div className="flex items-center justify-center min-h-64 p-4">
+          <div className="max-w-md w-full">
+            <div className="bg-white rounded-2xl p-6 shadow-lg">
+              <div className="text-center mb-6">
+                <div className="bg-blue-100 rounded-full p-4 inline-block mb-4">
+                  <Heart size={48} className="text-blue-500" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Sincronizar con tu pareja</h2>
+                <p className="text-gray-600 text-sm">
+                  Ingresa el código de tu pareja para ver su ciclo y síntomas
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Código de tu pareja
+                  </label>
+                  <input
+                    type="text"
+                    value={partnerCodeInput}
+                    onChange={(e) => setPartnerCodeInput(e.target.value.toUpperCase())}
+                    placeholder="Ej: ABC123"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
+                    maxLength={6}
+                  />
+                </div>
+
+                {error && (
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  onClick={handleSyncPartner}
+                  disabled={syncing}
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {syncing ? (
+                    <>
+                      <RefreshCw size={20} className="animate-spin" />
+                      <span>Sincronizando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Heart size={20} />
+                      <span>Sincronizar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </Layout>
@@ -117,21 +229,12 @@ const ManHome = () => {
               <span className="text-4xl">⚠️</span>
             </div>
             <p className="text-red-600 font-medium mb-4">{error}</p>
-            {error.includes('código de pareja') ? (
-              <button
-                onClick={() => navigate('/settings')}
-                className="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors"
-              >
-                Configurar código de pareja
-              </button>
-            ) : (
-              <button
-                onClick={() => window.location.reload()}
-                className="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors"
-              >
-                Reintentar
-              </button>
-            )}
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors"
+            >
+              Reintentar
+            </button>
           </div>
         </div>
       </Layout>

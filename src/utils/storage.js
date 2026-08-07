@@ -17,7 +17,7 @@ export const saveProfile = async (profile) => {
     // Guardar en localStorage como backup
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
     
-    // Guardar user_id por separado
+    // Guardar user_id por separato
     if (profile.user_id) {
       localStorage.setItem(STORAGE_KEYS.USER_ID, profile.user_id);
     }
@@ -30,7 +30,8 @@ export const saveProfile = async (profile) => {
       period_length: profile.periodLength || profile.period_length || 5,
       last_period_start: profile.lastPeriodStart || profile.last_period_start || '',
       gender: profile.gender,
-      partner_code: profile.partnerCode || profile.partner_code || null
+      partner_code: profile.partnerCode || profile.partner_code || null,
+      connected_partner_code: profile.connectedPartnerCode || profile.connected_partner_code || null
     };
     
     // Enviar al backend
@@ -343,8 +344,11 @@ export const getSymptomsByDate = async (date) => {
     const dateStr = `${year}-${month}-${day}`;
 
     const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}&date=${dateStr}`);
-    if (response.success && response.symptoms) {
-      return response.symptoms;
+    if (response.success) {
+      // El backend devuelve 'symptom' (singular) para una fecha específica
+      if (response.symptom) {
+        return [response.symptom];
+      }
     }
     return [];
   } catch (error) {
@@ -380,6 +384,20 @@ export const getPartnerProfile = async (partnerCode) => {
     return null;
   } catch (error) {
     console.error('Error getting partner profile:', error);
+    return null;
+  }
+};
+
+// Obtener perfil de la pareja por user_id
+export const getPartnerProfileByUserId = async (userId) => {
+  try {
+    const response = await apiRequest(`${API_ENDPOINTS.GET_PROFILE}?user_id=${userId}`);
+    if (response.success && response.profile) {
+      return response.profile;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting partner profile by user_id:', error);
     return null;
   }
 };
@@ -465,6 +483,8 @@ export const clearAllData = () => {
     localStorage.removeItem(STORAGE_KEYS.USER_ID);
     localStorage.removeItem(STORAGE_KEYS.PERIODS);
     localStorage.removeItem(STORAGE_KEYS.SYMPTOMS);
+    // También limpiar cualquier otro dato que pueda estar cacheado
+    localStorage.clear();
     return true;
   } catch (error) {
     console.error('Error clearing all data:', error);
