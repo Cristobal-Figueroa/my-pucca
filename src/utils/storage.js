@@ -1,6 +1,9 @@
 // Sistema de storage para guardar datos de la app (localStorage + backend)
 import { API_BASE_URL, API_ENDPOINTS, apiRequest } from '../config/api';
 
+// Exportar apiRequest para usarlo en otros componentes
+export { apiRequest };
+
 const STORAGE_KEYS = {
   PROFILE: 'pucca_profile',
   USER_ID: 'pucca_user_id',

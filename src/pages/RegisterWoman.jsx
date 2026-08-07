@@ -1,29 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Heart, Calendar, ArrowRight, ArrowLeft } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, ArrowLeft } from 'lucide-react';
 import { saveProfile } from '../utils/storage';
 import Modal from '../components/Modal';
 
 const RegisterWoman = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [cycleLength, setCycleLength] = useState(28);
-  const [periodLength, setPeriodLength] = useState(5);
-  const [lastPeriodStart, setLastPeriodStart] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
-
-  // Generar código de pareja
-  const generatePartnerCode = (name, userId) => {
-    const base = name.replace(/\s/g, '').toLowerCase() + userId;
-    let hash = 0;
-    for (let i = 0; i < base.length; i++) {
-      const char = base.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return Math.abs(hash).toString(16).toUpperCase().padStart(6, '0').slice(0, 6);
-  };
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -32,32 +20,45 @@ const RegisterWoman = () => {
       return;
     }
 
-    if (!lastPeriodStart) {
-      setModalMessage('Por favor selecciona la fecha de inicio de tu último periodo');
+    if (!email.trim()) {
+      setModalMessage('Por favor ingresa tu correo electrónico');
       setShowModal(true);
       return;
     }
 
-    const userId = 'user_' + Date.now();
-    const partnerCode = generatePartnerCode(name.trim(), userId);
-
-    const profile = {
-      user_id: userId,
-      name: name.trim(),
-      cycleLength,
-      periodLength,
-      lastPeriodStart,
-      gender: 'woman',
-      partnerCode
-    };
-
-    const saved = await saveProfile(profile);
-    if (saved) {
-      navigate('/home');
-    } else {
-      setModalMessage('Error al guardar el perfil. Intenta nuevamente.');
+    if (!email.includes('@')) {
+      setModalMessage('Por favor ingresa un correo válido');
       setShowModal(true);
+      return;
     }
+
+    if (!password) {
+      setModalMessage('Por favor ingresa tu contraseña');
+      setShowModal(true);
+      return;
+    }
+
+    if (password.length < 6) {
+      setModalMessage('La contraseña debe tener al menos 6 caracteres');
+      setShowModal(true);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setModalMessage('Las contraseñas no coinciden');
+      setShowModal(true);
+      return;
+    }
+
+    // Guardar datos temporales para el siguiente paso
+    localStorage.setItem('temp_register_data', JSON.stringify({
+      name: name.trim(),
+      email: email.trim(),
+      password,
+      gender: 'woman'
+    }));
+
+    navigate('/register-woman-details');
   };
 
   return (
@@ -104,81 +105,53 @@ const RegisterWoman = () => {
             </div>
           </div>
 
-          {/* Duración del ciclo */}
+          {/* Correo electrónico */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Duración de tu ciclo (días)
+              Correo electrónico
             </label>
             <div className="relative">
-              <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
-                type="number"
-                value={cycleLength}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setCycleLength(value === '' ? '' : parseInt(value));
-                }}
-                onBlur={(e) => {
-                  if (e.target.value === '' || parseInt(e.target.value) < 21) {
-                    setCycleLength(28);
-                  } else if (parseInt(e.target.value) > 35) {
-                    setCycleLength(35);
-                  }
-                }}
-                min="21"
-                max="35"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@email.com"
                 className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent"
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Promedio: 28 días (rango normal: 21-35 días)
-            </p>
           </div>
 
-          {/* Duración del periodo */}
+          {/* Contraseña */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Duración de tu periodo (días)
+              Contraseña
             </label>
             <div className="relative">
-              <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
-                type="number"
-                value={periodLength}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setPeriodLength(value === '' ? '' : parseInt(value));
-                }}
-                onBlur={(e) => {
-                  if (e.target.value === '' || parseInt(e.target.value) < 2) {
-                    setPeriodLength(5);
-                  } else if (parseInt(e.target.value) > 7) {
-                    setPeriodLength(7);
-                  }
-                }}
-                min="2"
-                max="7"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
                 className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent"
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Promedio: 5 días (rango normal: 2-7 días)
-            </p>
           </div>
 
-          {/* Fecha de último periodo */}
+          {/* Confirmar contraseña */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Fecha de inicio de tu último periodo
+              Confirmar contraseña
             </label>
             <div className="relative">
-              <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
-                type="date"
-                value={lastPeriodStart}
-                onChange={(e) => setLastPeriodStart(e.target.value)}
-                onClick={(e) => e.target.showPicker?.()}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent cursor-pointer"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repite tu contraseña"
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -188,7 +161,7 @@ const RegisterWoman = () => {
             onClick={handleSubmit}
             className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-4 rounded-xl font-semibold hover:from-pink-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center"
           >
-            Comenzar
+            Continuar
             <ArrowRight className="ml-2" size={20} />
           </button>
         </div>

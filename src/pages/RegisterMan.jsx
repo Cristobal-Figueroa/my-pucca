@@ -1,68 +1,64 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Key, Heart, ArrowRight, RefreshCw, ArrowLeft } from 'lucide-react';
-import { saveProfile, getPartnerProfile } from '../utils/storage';
+import { User, Mail, Lock, ArrowRight, ArrowLeft } from 'lucide-react';
+import { saveProfile } from '../utils/storage';
 import Modal from '../components/Modal';
 
 const RegisterMan = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [partnerCode, setPartnerCode] = useState('');
-  const [isValidating, setIsValidating] = useState(false);
-  const [isValid, setIsValid] = useState(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
-  const validateCode = async () => {
+  const handleSubmit = async () => {
     if (!name.trim()) {
       setModalMessage('Por favor ingresa tu nombre');
       setShowModal(true);
       return;
     }
 
-    if (!partnerCode.trim()) {
-      setModalMessage('Por favor ingresa el código de tu pareja');
+    if (!email.trim()) {
+      setModalMessage('Por favor ingresa tu correo electrónico');
       setShowModal(true);
       return;
     }
 
-    setIsValidating(true);
-    
-    // Validar código contra el backend
-    const partnerProfile = await getPartnerProfile(partnerCode.toUpperCase());
-    
-    if (partnerProfile) {
-      setIsValid(true);
-      
-      // Guardar perfil del hombre en la DB
-      const profile = {
-        user_id: 'user_' + Date.now(),
-        name: name.trim(),
-        gender: 'man',
-        partnerCode: partnerCode.toUpperCase()
-      };
-      
-      const saved = await saveProfile(profile);
-      
-      if (saved) {
-        setTimeout(() => {
-          navigate('/man-home');
-        }, 1000);
-      } else {
-        setModalMessage('Error al guardar el perfil. Intenta nuevamente.');
-        setShowModal(true);
-        setIsValid(false);
-        setIsValidating(false);
-      }
-    } else {
-      setIsValid(false);
-      setIsValidating(false);
+    if (!email.includes('@')) {
+      setModalMessage('Por favor ingresa un correo válido');
+      setShowModal(true);
+      return;
     }
-  };
 
-  const handleRefresh = () => {
-    setPartnerCode('');
-    setIsValid(null);
+    if (!password) {
+      setModalMessage('Por favor ingresa tu contraseña');
+      setShowModal(true);
+      return;
+    }
+
+    if (password.length < 6) {
+      setModalMessage('La contraseña debe tener al menos 6 caracteres');
+      setShowModal(true);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setModalMessage('Las contraseñas no coinciden');
+      setShowModal(true);
+      return;
+    }
+
+    // Guardar datos temporales para el siguiente paso
+    localStorage.setItem('temp_register_data', JSON.stringify({
+      name: name.trim(),
+      email: email.trim(),
+      password,
+      gender: 'man'
+    }));
+
+    navigate('/register-man-details');
   };
 
   return (
@@ -109,66 +105,64 @@ const RegisterMan = () => {
             </div>
           </div>
 
-          {/* Código de pareja */}
+          {/* Correo electrónico */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Código de tu pareja
+              Correo electrónico
             </label>
             <div className="relative">
-              <Key className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
-                type="text"
-                value={partnerCode}
-                onChange={(e) => {
-                  setPartnerCode(e.target.value.toUpperCase());
-                  setIsValid(null);
-                }}
-                placeholder="XXXXXX"
-                maxLength={6}
-                className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center text-2xl tracking-wider"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@email.com"
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <button
-                onClick={handleRefresh}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <RefreshCw size={20} />
-              </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Pide a tu pareja que te comparta su código desde la sección Pareja
-            </p>
           </div>
 
-          {/* Estado de validación */}
-          {isValid !== null && (
-            <div className={`p-4 rounded-xl ${
-              isValid ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-            }`}>
-              <p className={`text-sm font-medium ${
-                isValid ? 'text-green-800' : 'text-red-800'
-              }`}>
-                {isValid ? '✓ Código válido. Conectando...' : '✗ Código inválido. Verifica con tu pareja.'}
-              </p>
+          {/* Contraseña */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Contraseña
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
-          )}
+          </div>
+
+          {/* Confirmar contraseña */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Confirmar contraseña
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repite tu contraseña"
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
 
           {/* Botón de continuar */}
           <button
-            onClick={validateCode}
-            disabled={isValidating}
-            className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            onClick={handleSubmit}
+            className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center"
           >
-            {isValidating ? (
-              <>
-                <RefreshCw className="mr-2 animate-spin" size={20} />
-                Validando...
-              </>
-            ) : (
-              <>
-                Conectar
-                <ArrowRight className="ml-2" size={20} />
-              </>
-            )}
+            Continuar
+            <ArrowRight className="ml-2" size={20} />
           </button>
         </div>
 

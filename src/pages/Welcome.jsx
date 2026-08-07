@@ -30,12 +30,9 @@ const Welcome = () => {
 
   const handleGenderSelect = (gender) => {
     setSelectedGender(gender);
+    localStorage.setItem('selected_gender', gender);
     setTimeout(() => {
-      if (gender === 'woman') {
-        navigate('/register-woman');
-      } else {
-        navigate('/register-man');
-      }
+      navigate('/auth-choice');
     }, 300);
   };
 

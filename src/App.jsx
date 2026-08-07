@@ -1,7 +1,11 @@
 import { Routes, Route } from 'react-router-dom';
 import Welcome from './pages/Welcome';
+import AuthChoice from './pages/AuthChoice';
 import RegisterWoman from './pages/RegisterWoman';
+import RegisterWomanDetails from './pages/RegisterWomanDetails';
 import RegisterMan from './pages/RegisterMan';
+import RegisterManDetails from './pages/RegisterManDetails';
+import Login from './pages/Login';
 import ManHome from './pages/ManHome';
 import ManCalendar from './pages/ManCalendar';
 import ManTips from './pages/ManTips';
@@ -19,8 +23,12 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Welcome />} />
+      <Route path="/auth-choice" element={<AuthChoice />} />
       <Route path="/register-woman" element={<RegisterWoman />} />
+      <Route path="/register-woman-details" element={<RegisterWomanDetails />} />
       <Route path="/register-man" element={<RegisterMan />} />
+      <Route path="/register-man-details" element={<RegisterManDetails />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/man-home" element={<ManHome />} />
       <Route path="/man-calendar" element={<ManCalendar />} />
       <Route path="/man-tips" element={<ManTips />} />

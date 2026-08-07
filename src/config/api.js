@@ -4,6 +4,10 @@ export const API_BASE_URL = 'https://al.codeclandresell.com/backend';
 
 // Endpoints de la API
 export const API_ENDPOINTS = {
+  // Autenticación
+  REGISTER: '/register.php',
+  LOGIN: '/login.php',
+  
   // Perfil
   SAVE_PROFILE: '/save_profile.php',
   GET_PROFILE: '/get_profile.php',
