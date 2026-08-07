@@ -430,6 +430,18 @@ export const syncPartner = async (partnerCode) => {
       })
     });
     
+    if (response.success) {
+      // Actualizar el perfil local con el código de la pareja conectada
+      const profile = await getProfile();
+      if (profile) {
+        const updatedProfile = {
+          ...profile,
+          connectedPartnerCode: response.man_partner_code
+        };
+        localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(updatedProfile));
+      }
+    }
+    
     return response.success;
   } catch (error) {
     console.error('Error syncing partner:', error);

@@ -102,12 +102,14 @@ const El = () => {
         if (savedProfile && savedProfile.gender === 'woman') {
           setProfile(savedProfile);
           
-          // El partnerCode ahora es el código del hombre (guardado por el backend durante la sincronización)
-          if (savedProfile.partnerCode) {
-            const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+          // Usar connected_partner_code para buscar al hombre conectado
+          const partnerCodeToUse = savedProfile.connectedPartnerCode || savedProfile.partnerCode;
+          
+          if (partnerCodeToUse) {
+            const partnerProfile = await getPartnerProfile(partnerCodeToUse);
             if (partnerProfile && partnerProfile.gender === 'man') {
               setPartnerData(partnerProfile);
-              loadPartnerSymptomsForDate(selectedDate, savedProfile.partnerCode);
+              loadPartnerSymptomsForDate(selectedDate, partnerCodeToUse);
             } else {
               setError('Tu pareja aún no se ha conectado. Pídele que ingrese tu código en Ajustes.');
               setPartnerData(null);

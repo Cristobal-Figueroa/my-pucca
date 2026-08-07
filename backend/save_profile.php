@@ -25,8 +25,8 @@ if (!$user_id) {
     $user_id = uniqid('user_', true);
 }
 
-// Verificar si el usuario ya existe
-$stmt = $conn->prepare("SELECT id FROM users WHERE user_id = ?");
+// Buscar si el usuario ya existe
+$stmt = $conn->prepare("SELECT id, user_id, name, email, cycle_length, period_length, last_period_start, gender, partner_code, connected_partner_code FROM users WHERE user_id = ?");
 $stmt->bind_param("s", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();

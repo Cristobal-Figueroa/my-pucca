@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     
     // Usar prepared statement con mysqli
-    $stmt = $conn->prepare("SELECT user_id, name, cycle_length, period_length, last_period_start, gender FROM users WHERE partner_code = ? AND gender = 'woman' LIMIT 1");
+    $stmt = $conn->prepare("SELECT user_id, name, cycle_length, period_length, last_period_start, gender FROM users WHERE partner_code = ? LIMIT 1");
     $stmt->bind_param("s", $partner_code);
     $stmt->execute();
     $result = $stmt->get_result();

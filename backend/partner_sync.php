@@ -25,8 +25,8 @@ if ($result->num_rows > 0) {
     $partner = $result->fetch_assoc();
     $partner_user_id = $partner['user_id'];
     
-    // Actualizar el perfil del hombre con el código de su pareja
-    $stmt = $conn->prepare("UPDATE users SET partner_code = ? WHERE user_id = ?");
+    // Actualizar el perfil del hombre con el código de su pareja en connected_partner_code
+    $stmt = $conn->prepare("UPDATE users SET connected_partner_code = ? WHERE user_id = ?");
     $stmt->bind_param("ss", $partner_code, $user_id);
     $stmt->execute();
     
@@ -49,8 +49,8 @@ if ($result->num_rows > 0) {
         $stmt->execute();
     }
     
-    // Guardar el código del hombre en el perfil de la mujer para sincronización bidireccional
-    $stmt = $conn->prepare("UPDATE users SET partner_code = ? WHERE user_id = ?");
+    // Guardar el código del hombre en el connected_partner_code de la mujer para sincronización bidireccional
+    $stmt = $conn->prepare("UPDATE users SET connected_partner_code = ? WHERE user_id = ?");
     $stmt->bind_param("ss", $man_partner_code, $partner_user_id);
     $stmt->execute();
     
