@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Copy, RefreshCw, Heart, Key, CheckCircle, Upload, Cloud } from 'lucide-react';
-import { getProfile, saveProfile, getPartnerProfile, savePeriodsToDB, saveSymptomsToDB, getPeriods, getSymptoms } from '../utils/storage';
+import { getProfile, saveProfile, getPartnerProfile, getPeriods, getSymptoms } from '../utils/storage';
 import Layout from '../components/Layout';
 
 const Partner = () => {
@@ -133,20 +133,6 @@ const Partner = () => {
       if (!profileSaved) {
         setSyncMessage('Error al guardar el perfil. Intenta nuevamente.');
         return;
-      }
-      
-      if (profile.gender === 'woman') {
-        // Sincronizar periodos y síntomas si es mujer
-        const periods = await getPeriods();
-        const periodsSaved = await savePeriodsToDB(periods);
-        
-        const symptoms = await getSymptoms();
-        const symptomsSaved = await saveSymptomsToDB(symptoms);
-        
-        if (!periodsSaved || !symptomsSaved) {
-          setSyncMessage('Error al guardar periodos o síntomas. Intenta nuevamente.');
-          return;
-        }
       }
       
       setSyncMessage('¡Datos sincronizados exitosamente!');

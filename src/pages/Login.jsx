@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, ArrowLeft } from 'lucide-react';
-import { saveProfile, apiRequest, clearAllData } from '../utils/storage';
-import { API_ENDPOINTS } from '../config/api';
+import { getProfile, saveProfile, clearAllData, setUserId } from '../utils/storage';
 import Modal from '../components/Modal';
+import Layout from '../components/Layout';
+import { API_ENDPOINTS } from '../config/api';
+import { Mail, Lock, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -47,20 +48,8 @@ const Login = () => {
         // Limpiar datos anteriores antes de guardar nuevo perfil
         clearAllData();
 
-        // Guardar perfil localmente
-        const profile = {
-          user_id: response.user.user_id,
-          name: response.user.name,
-          email: response.user.email,
-          cycleLength: response.user.cycle_length,
-          periodLength: response.user.period_length,
-          lastPeriodStart: response.user.last_period_start,
-          gender: response.user.gender,
-          partnerCode: response.user.gender === 'woman' ? response.user.partner_code : null,
-          connectedPartnerCode: response.user.connected_partner_code
-        };
-
-        await saveProfile(profile);
+        // Guardar solo user_id para sesión
+        setUserId(response.user.user_id);
 
         // Redirigir según el género
         if (response.user.gender === 'man') {

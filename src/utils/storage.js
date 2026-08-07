@@ -1,62 +1,55 @@
-// Sistema de storage para guardar datos de la app (solo backend, sin localStorage)
+// Sistema directo a DB - sin localStorage (excepto user_id para sesión)
 import { API_BASE_URL, API_ENDPOINTS, apiRequest } from '../config/api';
 
-// Exportar apiRequest para usarlo en otros componentes
 export { apiRequest };
 
-// Solo guardamos el user_id en localStorage para mantener la sesión
 const USER_ID_KEY = 'pucca_user_id';
 
-// Perfil del usuario
+// Guardar user_id para sesión
+export const setUserId = (userId) => {
+  localStorage.setItem(USER_ID_KEY, userId);
+};
+
+export const getUserId = () => {
+  return localStorage.getItem(USER_ID_KEY);
+};
+
+export const clearUserId = () => {
+  localStorage.removeItem(USER_ID_KEY);
+  localStorage.clear();
+};
+
+// Perfil - directo a DB
 export const saveProfile = async (profile) => {
-  try {
-    // Guardar user_id en localStorage para mantener la sesión
-    if (profile.user_id) {
-      localStorage.setItem(USER_ID_KEY, profile.user_id);
-    }
-    
-    // Convertir a formato snake_case para el backend
-    const backendProfile = {
-      user_id: profile.user_id,
-      name: profile.name,
-      cycle_length: profile.cycleLength || profile.cycle_length || 28,
-      period_length: profile.periodLength || profile.period_length || 5,
-      last_period_start: profile.lastPeriodStart || profile.last_period_start || '',
-      gender: profile.gender,
-      partner_code: profile.gender === 'man' ? null : (profile.partnerCode || profile.partner_code || null),
-      connected_partner_code: profile.connectedPartnerCode || profile.connected_partner_code || null
-    };
-    
-    // Enviar al backend
-    const response = await apiRequest(API_ENDPOINTS.SAVE_PROFILE, {
-      method: 'POST',
-      body: JSON.stringify(backendProfile)
-    });
-    
-    if (response.success) {
-      // Si el backend generó un partner_code, actualizar el perfil (solo para mujeres)
-      if (response.partner_code && profile.gender !== 'man') {
-        profile.partnerCode = response.partner_code;
-      }
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error('Error saving profile:', error);
-    return false;
-  }
+  if (profile.user_id) setUserId(profile.user_id);
+  
+  const backendProfile = {
+    user_id: profile.user_id,
+    name: profile.name,
+    cycle_length: profile.cycleLength || 28,
+    period_length: profile.periodLength || 5,
+    last_period_start: profile.lastPeriodStart || '',
+    gender: profile.gender,
+    partner_code: profile.gender === 'man' ? null : (profile.partnerCode || null),
+    connected_partner_code: profile.connectedPartnerCode || null
+  };
+  
+  const response = await apiRequest(API_ENDPOINTS.SAVE_PROFILE, {
+    method: 'POST',
+    body: JSON.stringify(backendProfile)
+  });
+  
+  return response.success;
 };
 
 export const getProfile = async () => {
-  try {
-    // Obtener user_id del localStorage
-    const userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) return null;
+  const userId = getUserId();
+  if (!userId) return null;
 
-    // Obtener perfil del backend
+  try {
     const response = await apiRequest(`${API_ENDPOINTS.GET_PROFILE}?user_id=${userId}`);
     if (response.success && response.profile) {
-      const profile = {
+      return {
         user_id: response.profile.user_id,
         name: response.profile.name,
         email: response.profile.email,
@@ -67,195 +60,68 @@ export const getProfile = async () => {
         partnerCode: response.profile.partner_code,
         connectedPartnerCode: response.profile.connected_partner_code
       };
-      return profile;
     }
-    return null;
   } catch (error) {
-    console.error('Error getting profile:', error);
-    return null;
+    if (error.message?.includes('404')) clearUserId();
   }
+  return null;
 };
 
-// Función auxiliar para parsear fechas como fecha local (no UTC)
 export const parseLocalDate = (dateString) => {
   if (!dateString) return null;
-  // Si es YYYY-MM-DD, parsear como fecha local
   if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
     const [year, month, day] = dateString.split('-').map(Number);
     return new Date(year, month - 1, day);
   }
-  // Si no, usar el parseo normal
   return new Date(dateString);
 };
 
-export const deleteProfile = () => {
-  try {
-    localStorage.removeItem(USER_ID_KEY);
-    return true;
-  } catch (error) {
-    console.error('Error deleting profile:', error);
-    return false;
-  }
-};
-
-// Periodos - ya no se guardan en localStorage, solo en DB
-export const savePeriods = async (periods) => {
-  try {
-    // Solo guardar en DB, no en localStorage
-    return await savePeriodsToDB(periods);
-  } catch (error) {
-    console.error('Error saving periods:', error);
-    return false;
-  }
-};
-
-// Guardar periodos en DB (bulk)
-export const savePeriodsToDB = async (periods) => {
-  try {
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
-    if (!userId) return false;
-    
-    const response = await apiRequest(API_ENDPOINTS.SAVE_PERIODS_BULK, {
-      method: 'POST',
-      body: JSON.stringify({
-        user_id: userId,
-        periods: periods
-      })
-    });
-    
-    return response.success;
-  } catch (error) {
-    return false;
-  }
-};
-
+// Periodos - directo a DB
 export const getPeriods = async () => {
+  const userId = getUserId();
+  if (!userId) return [];
   try {
-    // Obtener periodos desde DB
-    const userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) return [];
-
     const response = await apiRequest(`${API_ENDPOINTS.GET_PERIODS}?user_id=${userId}`);
-    if (response.success && response.periods) {
-      return response.periods;
-    }
-    return [];
-  } catch (error) {
-    console.error('Error getting periods:', error);
-    return [];
-  }
+    return response.success && response.periods ? response.periods : [];
+  } catch { return []; }
 };
 
 export const addPeriod = async (period) => {
+  const userId = getUserId();
+  if (!userId) return false;
   try {
-    // Solo enviar al backend, no usar localStorage
-    const userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) return false;
-
     await apiRequest(API_ENDPOINTS.SAVE_PERIOD, {
       method: 'POST',
-      body: JSON.stringify({
-        user_id: userId,
-        date: period.date,
-        notes: period.notes || ''
-      })
+      body: JSON.stringify({ user_id: userId, date: period.date, notes: period.notes || '' })
     });
-
     return true;
-  } catch (error) {
-    console.error('Error adding period:', error);
-    return false;
-  }
+  } catch { return false; }
 };
 
-export const updatePeriod = async (periodId, updatedPeriod) => {
-  try {
-    // Solo enviar al backend, no usar localStorage
-    const userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) return false;
-
-    await apiRequest(API_ENDPOINTS.SAVE_PERIOD, {
-      method: 'POST',
-      body: JSON.stringify({
-        user_id: userId,
-        date: updatedPeriod.date,
-        notes: updatedPeriod.notes || ''
-      })
-    });
-
-    return true;
-  } catch (error) {
-    console.error('Error updating period:', error);
-    return false;
-  }
-};
-
-export const deletePeriod = async (periodId) => {
-  try {
-    // Nota: No hay endpoint para eliminar periodos en el backend
-    // Se maneja actualizando el registro con notas vacías o similar si es necesario
-    // Por ahora, solo retornamos true
-    return true;
-  } catch (error) {
-    console.error('Error deleting period:', error);
-    return false;
-  }
-};
-
-// Síntomas - ya no se guardan en localStorage, solo en DB
-export const saveSymptoms = async (symptoms) => {
-  try {
-    // Solo guardar en DB, no en localStorage
-    return await saveSymptomsToDB(symptoms);
-  } catch (error) {
-    console.error('Error saving symptoms:', error);
-    return false;
-  }
-};
-
-// Guardar síntomas en DB (bulk)
-export const saveSymptomsToDB = async (symptoms) => {
-  try {
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
-    if (!userId) return false;
-    
-    const response = await apiRequest(API_ENDPOINTS.SAVE_SYMPTOMS_BULK, {
-      method: 'POST',
-      body: JSON.stringify({
-        user_id: userId,
-        symptoms: symptoms
-      })
-    });
-    
-    return response.success;
-  } catch (error) {
-    return false;
-  }
-};
-
+// Síntomas - directo a DB
 export const getSymptoms = async () => {
+  const userId = getUserId();
+  if (!userId) return [];
   try {
-    // Obtener síntomas desde DB
-    const userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) return [];
-
     const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}`);
-    if (response.success && response.symptoms) {
-      return response.symptoms;
-    }
-    return [];
-  } catch (error) {
-    console.error('Error getting symptoms:', error);
-    return [];
-  }
+    return response.success && response.symptoms ? response.symptoms : [];
+  } catch { return []; }
+};
+
+export const getSymptomsByDate = async (date) => {
+  const userId = getUserId();
+  if (!userId) return [];
+  try {
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}&date=${dateStr}`);
+    return response.success && response.symptom ? [response.symptom] : [];
+  } catch { return []; }
 };
 
 export const addSymptom = async (symptom) => {
+  const userId = getUserId();
+  if (!userId) return false;
   try {
-    // Solo enviar al backend, no usar localStorage
-    const userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) return false;
-
     await apiRequest(API_ENDPOINTS.SAVE_SYMPTOM, {
       method: 'POST',
       body: JSON.stringify({
@@ -273,204 +139,46 @@ export const addSymptom = async (symptom) => {
         notes: symptom.notes || ''
       })
     });
-
     return true;
-  } catch (error) {
-    console.error('Error adding symptom:', error);
-    return false;
-  }
+  } catch { return false; }
 };
 
-export const updateSymptom = async (symptomId, updatedSymptom) => {
-  try {
-    // Solo enviar al backend, no usar localStorage
-    const userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) return false;
+export const deleteSymptom = async () => true;
 
-    await apiRequest(API_ENDPOINTS.SAVE_SYMPTOM, {
-      method: 'POST',
-      body: JSON.stringify({
-        user_id: userId,
-        date: updatedSymptom.date,
-        mood: updatedSymptom.mood || null,
-        libido: updatedSymptom.libido || null,
-        cravings: updatedSymptom.cravings || null,
-        energy: updatedSymptom.energy || null,
-        sleep: updatedSymptom.sleep || null,
-        pain: updatedSymptom.pain || null,
-        skin: updatedSymptom.skin || null,
-        digestion: updatedSymptom.digestion || null,
-        headache: updatedSymptom.headache || null,
-        notes: updatedSymptom.notes || ''
-      })
-    });
-
-    return true;
-  } catch (error) {
-    console.error('Error updating symptom:', error);
-    return false;
-  }
-};
-
-export const deleteSymptom = async (symptomId) => {
-  try {
-    // Nota: No hay endpoint para eliminar síntomas en el backend
-    // Se maneja actualizando el registro con valores null si es necesario
-    // Por ahora, solo retornamos true
-    return true;
-  } catch (error) {
-    console.error('Error deleting symptom:', error);
-    return false;
-  }
-};
-
-// Obtener síntomas por fecha desde DB
-export const getSymptomsByDate = async (date) => {
-  try {
-    const userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) return [];
-
-    // Usar fecha local para evitar problemas de zona horaria
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
-
-    const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}&date=${dateStr}`);
-    if (response.success) {
-      // El backend devuelve 'symptom' (singular) para una fecha específica
-      if (response.symptom) {
-        return [response.symptom];
-      }
-    }
-    return [];
-  } catch (error) {
-    console.error('Error getting symptoms by date:', error);
-    return [];
-  }
-};
-
-// Obtener todos los síntomas del usuario desde DB
-export const getAllSymptoms = async () => {
-  try {
-    const userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) return [];
-
-    const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}`);
-    if (response.success && response.symptoms) {
-      return response.symptoms;
-    }
-    return [];
-  } catch (error) {
-    console.error('Error getting all symptoms:', error);
-    return [];
-  }
-};
-
-// Obtener perfil de la pareja por código
+// Pareja - directo a DB
 export const getPartnerProfile = async (partnerCode) => {
   try {
     const response = await apiRequest(`${API_ENDPOINTS.GET_PARTNER_PROFILE}?partner_code=${partnerCode}`);
-    if (response.success && response.profile) {
-      return response.profile;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error getting partner profile:', error);
-    return null;
-  }
+    return response.success && response.profile ? response.profile : null;
+  } catch { return null; }
 };
 
-// Obtener perfil de la pareja por user_id
 export const getPartnerProfileByUserId = async (userId) => {
   try {
     const response = await apiRequest(`${API_ENDPOINTS.GET_PROFILE}?user_id=${userId}`);
-    if (response.success && response.profile) {
-      return response.profile;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error getting partner profile by user_id:', error);
-    return null;
-  }
+    return response.success && response.profile ? response.profile : null;
+  } catch { return null; }
 };
 
-// Obtener síntomas de la pareja por fecha
-export const getPartnerSymptomsByDate = async (partnerCode, date) => {
-  try {
-    // Usar fecha local para evitar problemas de zona horaria
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
-    
-    const response = await apiRequest(`${API_ENDPOINTS.GET_PARTNER_SYMPTOMS}?partner_code=${partnerCode}&date=${dateStr}`);
-    if (response.success && response.symptom) {
-      return response.symptom;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error getting partner symptoms:', error);
-    return null;
-  }
-};
-
-// Obtener todos los síntomas de la pareja
 export const getPartnerAllSymptoms = async (partnerCode) => {
   try {
-    // Primero obtener el user_id de la pareja
     const partnerProfile = await getPartnerProfile(partnerCode);
-    if (!partnerProfile || !partnerProfile.user_id) {
-      return [];
-    }
-
-    // Usar el endpoint existente get_symptoms con el user_id de la pareja
+    if (!partnerProfile?.user_id) return [];
     const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${partnerProfile.user_id}`);
-    if (response.success && response.symptoms) {
-      return response.symptoms;
-    }
-    return [];
-  } catch (error) {
-    console.error('Error getting all partner symptoms:', error);
-    return [];
-  }
+    return response.success && response.symptoms ? response.symptoms : [];
+  } catch { return []; }
 };
 
-// Sincronizar con pareja
 export const syncPartner = async (partnerCode) => {
+  const userId = getUserId();
+  if (!userId) return false;
   try {
-    const userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) return false;
-
     const response = await apiRequest(API_ENDPOINTS.PARTNER_SYNC, {
       method: 'POST',
-      body: JSON.stringify({
-        user_id: userId,
-        partner_code: partnerCode
-      })
+      body: JSON.stringify({ user_id: userId, partner_code: partnerCode })
     });
-
-    if (response.success) {
-      // Recargar el perfil desde el backend para obtener datos actualizados
-      const updatedProfile = await getProfile();
-      return true;
-    }
-    
-    return false;
-  } catch (error) {
-    console.error('Error syncing partner:', error);
-    return false;
-  }
+    return response.success;
+  } catch { return false; }
 };
 
-// Limpiar todos los datos
-export const clearAllData = () => {
-  try {
-    localStorage.removeItem(USER_ID_KEY);
-    localStorage.clear();
-    return true;
-  } catch (error) {
-    console.error('Error clearing all data:', error);
-    return false;
-  }
-};
+export const clearAllData = () => clearUserId();

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Key, ArrowRight, ArrowLeft, RefreshCw } from 'lucide-react';
-import { saveProfile, getPartnerProfile, apiRequest } from '../utils/storage';
+import { ArrowLeft, Key, CheckCircle, XCircle } from 'lucide-react';
+import { getPartnerProfile, apiRequest, setUserId } from '../utils/storage';
 import { API_ENDPOINTS } from '../config/api';
 import Modal from '../components/Modal';
+import Layout from '../components/Layout';
 
 const RegisterManDetails = () => {
   const navigate = useNavigate();
@@ -63,17 +64,8 @@ const RegisterManDetails = () => {
       });
 
       if (response.success) {
-        // Guardar perfil localmente
-        const profile = {
-          user_id: response.user_id,
-          name: tempData.name,
-          email: tempData.email,
-          gender: 'man',
-          partnerCode: null, // Los hombres no tienen partner_code
-          connectedPartnerCode: response.connected_partner_code
-        };
-
-        await saveProfile(profile);
+        // Guardar solo user_id para sesión
+        setUserId(response.user_id);
         
         // Limpiar datos temporales
         localStorage.removeItem('temp_register_data');
