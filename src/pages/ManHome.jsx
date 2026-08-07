@@ -114,12 +114,21 @@ const ManHome = () => {
               <span className="text-4xl">⚠️</span>
             </div>
             <p className="text-red-600 font-medium mb-4">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors"
-            >
-              Reintentar
-            </button>
+            {error.includes('código de pareja') ? (
+              <button
+                onClick={() => navigate('/settings')}
+                className="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors"
+              >
+                Configurar código de pareja
+              </button>
+            ) : (
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors"
+              >
+                Reintentar
+              </button>
+            )}
           </div>
         </div>
       </Layout>

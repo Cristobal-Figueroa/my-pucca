@@ -23,8 +23,8 @@ const RegisterManDetails = () => {
     setTempData(JSON.parse(data));
   }, [navigate]);
 
-  const handleSubmit = async () => {
-    if (!partnerCode.trim()) {
+  const handleSubmit = async (skipCode = false) => {
+    if (!skipCode && !partnerCode.trim()) {
       setModalMessage('Por favor ingresa el código de tu pareja');
       setShowModal(true);
       return;
@@ -38,55 +38,57 @@ const RegisterManDetails = () => {
 
     setIsValidating(true);
     
-    // Validar código contra el backend
-    const partnerProfile = await getPartnerProfile(partnerCode.toUpperCase());
-    
-    if (partnerProfile) {
-      setIsValid(true);
+    // Si no salta el código, validar contra el backend
+    if (!skipCode) {
+      const partnerProfile = await getPartnerProfile(partnerCode.toUpperCase());
       
-      try {
-        const response = await apiRequest(API_ENDPOINTS.REGISTER, {
-          method: 'POST',
-          body: JSON.stringify({
-            name: tempData.name,
-            email: tempData.email,
-            password: tempData.password,
-            gender: 'man',
-            partnerCode: partnerCode.toUpperCase()
-          })
-        });
+      if (!partnerProfile) {
+        setIsValid(false);
+        setIsValidating(false);
+        return;
+      }
+      setIsValid(true);
+    }
+    
+    try {
+      const response = await apiRequest(API_ENDPOINTS.REGISTER, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: tempData.name,
+          email: tempData.email,
+          password: tempData.password,
+          gender: 'man',
+          partnerCode: skipCode ? null : partnerCode.toUpperCase()
+        })
+      });
 
-        if (response.success) {
-          // Guardar perfil localmente
-          const profile = {
-            user_id: response.user_id,
-            name: tempData.name,
-            email: tempData.email,
-            gender: 'man',
-            partnerCode: partnerCode.toUpperCase()
-          };
+      if (response.success) {
+        // Guardar perfil localmente
+        const profile = {
+          user_id: response.user_id,
+          name: tempData.name,
+          email: tempData.email,
+          gender: 'man',
+          partnerCode: skipCode ? null : partnerCode.toUpperCase()
+        };
 
-          await saveProfile(profile);
-          
-          // Limpiar datos temporales
-          localStorage.removeItem('temp_register_data');
-          localStorage.removeItem('selected_gender');
-          setTimeout(() => {
-            navigate('/man-home');
-          }, 1000);
-        } else {
-          setModalMessage(response.message || 'Error al registrar. Intenta nuevamente.');
-          setShowModal(true);
-          setIsValid(false);
-          setIsValidating(false);
-        }
-      } catch (error) {
-        setModalMessage('Error de conexión. Intenta nuevamente.');
+        await saveProfile(profile);
+        
+        // Limpiar datos temporales
+        localStorage.removeItem('temp_register_data');
+        localStorage.removeItem('selected_gender');
+        setTimeout(() => {
+          navigate('/man-home');
+        }, 1000);
+      } else {
+        setModalMessage(response.message || 'Error al registrar. Intenta nuevamente.');
         setShowModal(true);
         setIsValid(false);
         setIsValidating(false);
       }
-    } else {
+    } catch (error) {
+      setModalMessage('Error de conexión. Intenta nuevamente.');
+      setShowModal(true);
       setIsValid(false);
       setIsValidating(false);
     }
@@ -188,6 +190,14 @@ const RegisterManDetails = () => {
                 <ArrowRight className="ml-2" size={20} />
               </>
             )}
+          </button>
+
+          {/* Opción de continuar sin código */}
+          <button
+            onClick={() => handleSubmit(true)}
+            className="w-full text-gray-600 py-3 rounded-xl font-medium hover:text-gray-800 transition-all"
+          >
+            Continuar sin código de pareja
           </button>
         </div>
 

@@ -65,7 +65,14 @@ const Login = () => {
           navigate('/home');
         }
       } else {
-        setModalMessage(response.message || 'Error al iniciar sesión');
+        // Mensajes específicos según el error
+        if (response.message && response.message.includes('No se encontró')) {
+          setModalMessage('No existe una cuenta con ese correo. Por favor regístrate primero.');
+        } else if (response.message && response.message.includes('Contraseña incorrecta')) {
+          setModalMessage('Contraseña incorrecta. Por favor intenta nuevamente.');
+        } else {
+          setModalMessage(response.message || 'Error al iniciar sesión');
+        }
         setShowModal(true);
       }
     } catch (error) {
@@ -160,7 +167,7 @@ const Login = () => {
         {/* Información */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            ¿Olvidaste tu contraseña? <span className="text-purple-600 font-semibold cursor-pointer hover:underline">Recuperar</span>
+            ¿No tienes cuenta? <span onClick={() => navigate('/auth-choice')} className="text-purple-600 font-semibold cursor-pointer hover:underline">Regístrate</span>
           </p>
         </div>
       </div>
