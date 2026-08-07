@@ -7,13 +7,19 @@ const BottomBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMan, setIsMan] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const checkGender = async () => {
+    const checkAuth = async () => {
       const profile = await getProfile();
-      setIsMan(profile && profile.gender === 'man');
+      if (profile) {
+        setIsAuthenticated(true);
+        setIsMan(profile.gender === 'man');
+      } else {
+        setIsAuthenticated(false);
+      }
     };
-    checkGender();
+    checkAuth();
   }, []);
 
   const navItems = isMan ? [
@@ -29,6 +35,10 @@ const BottomBar = () => {
     { path: '/ella', icon: Activity, label: 'Mis Síntomas' },
     { path: '/partner', icon: Users, label: 'Pareja' },
   ];
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">

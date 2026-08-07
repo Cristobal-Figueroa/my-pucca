@@ -106,7 +106,7 @@ const RegisterManDetails = () => {
       <div className="max-w-md w-full">
         {/* Botón volver */}
         <button
-          onClick={() => navigate('/register-man')}
+          onClick={() => navigate(-1)}
           className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
         >
           <ArrowLeft size={20} className="mr-2" />
