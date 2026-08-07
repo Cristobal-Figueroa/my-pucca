@@ -23,7 +23,7 @@ export const saveProfile = async (profile) => {
       period_length: profile.periodLength || profile.period_length || 5,
       last_period_start: profile.lastPeriodStart || profile.last_period_start || '',
       gender: profile.gender,
-      partner_code: profile.partnerCode || profile.partner_code || null,
+      partner_code: profile.gender === 'man' ? null : (profile.partnerCode || profile.partner_code || null),
       connected_partner_code: profile.connectedPartnerCode || profile.connected_partner_code || null
     };
     
@@ -34,8 +34,8 @@ export const saveProfile = async (profile) => {
     });
     
     if (response.success) {
-      // Si el backend generó un partner_code, actualizar el perfil
-      if (response.partner_code) {
+      // Si el backend generó un partner_code, actualizar el perfil (solo para mujeres)
+      if (response.partner_code && profile.gender !== 'man') {
         profile.partnerCode = response.partner_code;
       }
       return true;

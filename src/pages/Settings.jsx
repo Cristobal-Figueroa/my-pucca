@@ -30,14 +30,22 @@ const Settings = () => {
       if (savedProfile) {
         setProfile(savedProfile);
         
-        // Si es hombre, cargar el código de pareja ya guardado
-        if (savedProfile.gender === 'man' && savedProfile.partnerCode) {
-          setPartnerCode(savedProfile.partnerCode);
+        // Si es hombre, cargar el código de pareja ya guardado (connectedPartnerCode)
+        if (savedProfile.gender === 'man' && savedProfile.connectedPartnerCode) {
+          setPartnerCode(savedProfile.connectedPartnerCode);
           // Intentar cargar el nombre de la pareja
-          const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
-          if (partnerProfile) {
-            setPartnerName(partnerProfile.name);
-            setIsValid(true);
+          try {
+            const partnerProfile = await getPartnerProfile(savedProfile.connectedPartnerCode);
+            if (partnerProfile) {
+              setPartnerName(partnerProfile.name);
+              setIsValid(true);
+            } else {
+              // Si no se encuentra el perfil, marcar como no válido
+              setIsValid(false);
+            }
+          } catch (err) {
+            console.error('Error loading partner profile:', err);
+            setIsValid(false);
           }
         }
       }
@@ -113,23 +121,26 @@ const Settings = () => {
       setIsValid(true);
       setPartnerName(partnerProfile.name);
       
-      // Guardar el código en el perfil del hombre
-      const updatedProfile = {
-        ...profile,
-        partnerCode: partnerCode.toUpperCase()
-      };
-      await saveProfile(updatedProfile);
-      setProfile(updatedProfile);
-      
       // Sincronizar bidireccionalmente en el backend
       const syncResult = await syncPartner(partnerCode.toUpperCase());
       
       if (syncResult) {
+        // Recargar el perfil para obtener datos actualizados
+        const updatedProfile = await getProfile();
+        if (updatedProfile) {
+          setProfile(updatedProfile);
+        }
         setModalMessage('¡Código de pareja guardado exitosamente! Sincronización completada.');
+        setShowModal(true);
+        
+        // Navegar a man-home para forzar recarga de toda la app con el nuevo perfil
+        setTimeout(() => {
+          navigate('/man-home');
+        }, 1500);
       } else {
-        setModalMessage('¡Código de pareja guardado! (La sincronización puede tardar unos segundos)');
+        setModalMessage('Error al sincronizar. Intenta nuevamente.');
+        setShowModal(true);
       }
-      setShowModal(true);
     } else {
       setIsValid(false);
       setModalMessage('Código no encontrado. Verifica que sea correcto.');

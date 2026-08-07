@@ -30,29 +30,13 @@ const ManHome = () => {
         setLoading(true);
         setError(null);
         
-        const savedProfile = await getProfile();
-        if (savedProfile && savedProfile.gender === 'man') {
-          setProfile(savedProfile);
+        // Recargar el perfil desde el backend para obtener datos actualizados
+        const profile = await getProfile();
+        if (profile && profile.gender === 'man') {
+          setProfile(profile);
           
-          // Recargar el perfil desde el backend para obtener datos actualizados
-          const userId = localStorage.getItem('pucca_user_id');
-          let partnerCodeToUse = savedProfile.connectedPartnerCode;
-          
-          if (userId) {
-            try {
-              const response = await apiRequest(`${API_ENDPOINTS.GET_PROFILE}?user_id=${userId}`);
-              if (response.success && response.profile) {
-                const updatedProfile = {
-                  ...savedProfile,
-                  connectedPartnerCode: response.profile.connected_partner_code
-                };
-                setProfile(updatedProfile);
-                partnerCodeToUse = updatedProfile.connectedPartnerCode;
-              }
-            } catch (err) {
-              console.error('Error refreshing profile:', err);
-            }
-          }
+          // Los hombres solo usan connectedPartnerCode (código de la mujer)
+          const partnerCodeToUse = profile.connectedPartnerCode;
           
           // Cargar datos reales de la pareja usando el partnerCode
           if (partnerCodeToUse) {

@@ -60,7 +60,8 @@ const RegisterWomanDetails = () => {
           periodLength,
           lastPeriodStart,
           gender: 'woman',
-          partnerCode: response.partner_code
+          partnerCode: response.partner_code,
+          connectedPartnerCode: response.connected_partner_code
         };
 
         await saveProfile(profile);

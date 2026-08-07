@@ -69,7 +69,8 @@ const RegisterManDetails = () => {
           name: tempData.name,
           email: tempData.email,
           gender: 'man',
-          partnerCode: skipCode ? null : partnerCode.toUpperCase()
+          partnerCode: null, // Los hombres no tienen partner_code
+          connectedPartnerCode: response.connected_partner_code
         };
 
         await saveProfile(profile);
