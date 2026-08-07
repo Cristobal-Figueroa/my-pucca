@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Smile, Flame, Utensils, Moon, Zap, Droplet, Activity, FileText, Heart } from 'lucide-react';
+import { Smile, Flame, Utensils, Moon, Zap, Droplet, Activity, Headphones, FileText } from 'lucide-react';
 import { getProfile, getPartnerProfile, getPartnerAllSymptoms } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -188,21 +188,8 @@ const El = () => {
   }
 
   return (
-    <Layout title={`Hola, ${profile.name}`} showBackButton={false} showSettings={true}>
+    <Layout title="Él" showBackButton={false}>
       <div className="space-y-6">
-        {/* Header con información del hombre */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <div className="text-right">
-              <p className="text-sm opacity-90">Cómo se siente hoy</p>
-              <p className="text-2xl font-bold">{partnerData.name}</p>
-            </div>
-          </div>
-          <p className="text-sm opacity-90">
-            Aquí podrás ver cómo se siente tu pareja. Los síntomas que él registre aparecerán aquí.
-          </p>
-        </div>
-
         {/* Selector de fecha */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -310,11 +297,11 @@ const El = () => {
           </div>
         </div>
 
-        {/* Sueño */}
+        {/* Calidad de sueño */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center mb-4">
             <Moon className="text-indigo-500 mr-2" size={24} />
-            <h3 className="text-lg font-semibold text-gray-900">Sueño</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Calidad de sueño</h3>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {sleepOptions.map((option) => (
@@ -356,11 +343,80 @@ const El = () => {
           </div>
         </div>
 
+        {/* Piel */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Droplet className="text-blue-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Piel</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {skinOptions.map((option) => (
+              <button
+                key={option.value}
+                disabled
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  partnerSymptoms?.skin === option.value
+                    ? `${option.color} ring-2 ring-blue-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-400'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Digestión */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Utensils className="text-green-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Digestión</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {digestionOptions.map((option) => (
+              <button
+                key={option.value}
+                disabled
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  partnerSymptoms?.digestion === option.value
+                    ? `${option.color} ring-2 ring-blue-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-400'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Dolor de cabeza */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Headphones className="text-purple-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Dolor de cabeza</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {headacheOptions.map((option) => (
+              <button
+                key={option.value}
+                disabled
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  partnerSymptoms?.headache === option.value
+                    ? `${option.color} ring-2 ring-blue-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-400'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Notas */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center mb-4">
-            <FileText className="text-purple-500 mr-2" size={24} />
-            <h3 className="text-lg font-semibold text-gray-900">Notas</h3>
+            <FileText className="text-green-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Notas adicionales</h3>
           </div>
           <div className="bg-gray-50 p-4 rounded-xl">
             <p className="text-sm text-gray-700">
