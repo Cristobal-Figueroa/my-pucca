@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Smile, Flame, Utensils, Moon, Zap, Droplet, Activity, Headphones, Heart } from 'lucide-react';
+import { Smile, Flame, Utensils, Moon, Zap, Droplet, Activity, FileText, Heart } from 'lucide-react';
 import { getProfile, getPartnerProfile, getPartnerAllSymptoms } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -188,8 +188,21 @@ const El = () => {
   }
 
   return (
-    <Layout title={`Él - ${partnerData.name}`} showBackButton={false}>
+    <Layout title={`Hola, ${profile.name}`} showBackButton={false} showSettings={true}>
       <div className="space-y-6">
+        {/* Header con información del hombre */}
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl p-6 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-right">
+              <p className="text-sm opacity-90">Cómo se siente hoy</p>
+              <p className="text-2xl font-bold">{partnerData.name}</p>
+            </div>
+          </div>
+          <p className="text-sm opacity-90">
+            Aquí podrás ver cómo se siente tu pareja. Los síntomas que él registre aparecerán aquí.
+          </p>
+        </div>
+
         {/* Selector de fecha */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -205,161 +218,156 @@ const El = () => {
           />
         </div>
 
-        {/* Información */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl p-6 text-white">
+        {/* Estado de ánimo */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center mb-4">
-            <Heart className="mr-2" size={24} />
-            <h2 className="text-xl font-bold">Síntomas de {partnerData.name}</h2>
+            <Smile className="text-blue-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Estado de ánimo</h3>
           </div>
-          <p className="text-sm opacity-90">
-            Aquí podrás ver cómo se siente tu pareja. Los síntomas que él registre aparecerán aquí.
-          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {moodOptions.map((option) => (
+              <button
+                key={option.value}
+                disabled
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  partnerSymptoms?.mood === option.value
+                    ? `${option.color} ring-2 ring-blue-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-400'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Síntomas del hombre */}
-        {partnerSymptoms ? (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Síntomas registrados</h3>
-            
-            {/* Estado de ánimo */}
-            {partnerSymptoms.mood && (
-              <div className="mb-4">
-                <div className="flex items-center mb-3">
-                  <Smile className="text-blue-500 mr-2" size={20} />
-                  <h4 className="font-medium text-gray-900">Estado de ánimo</h4>
-                </div>
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                  {moodOptions.find(o => o.value === partnerSymptoms.mood)?.label}
-                </span>
-              </div>
-            )}
-
-            {/* Libido */}
-            {partnerSymptoms.libido && (
-              <div className="mb-4">
-                <div className="flex items-center mb-3">
-                  <Flame className="text-red-500 mr-2" size={20} />
-                  <h4 className="font-medium text-gray-900">Libido</h4>
-                </div>
-                <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
-                  {libidoOptions.find(o => o.value === partnerSymptoms.libido)?.label}
-                </span>
-              </div>
-            )}
-
-            {/* Antojos */}
-            {partnerSymptoms.cravings && (
-              <div className="mb-4">
-                <div className="flex items-center mb-3">
-                  <Utensils className="text-orange-500 mr-2" size={20} />
-                  <h4 className="font-medium text-gray-900">Antojos</h4>
-                </div>
-                <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm">
-                  {cravingsOptions.find(o => o.value === partnerSymptoms.cravings)?.label}
-                </span>
-              </div>
-            )}
-
-            {/* Energía */}
-            {partnerSymptoms.energy && (
-              <div className="mb-4">
-                <div className="flex items-center mb-3">
-                  <Zap className="text-amber-600 mr-2" size={20} />
-                  <h4 className="font-medium text-gray-900">Energía</h4>
-                </div>
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                  {energyOptions.find(o => o.value === partnerSymptoms.energy)?.label}
-                </span>
-              </div>
-            )}
-
-            {/* Sueño */}
-            {partnerSymptoms.sleep && (
-              <div className="mb-4">
-                <div className="flex items-center mb-3">
-                  <Moon className="text-indigo-500 mr-2" size={20} />
-                  <h4 className="font-medium text-gray-900">Sueño</h4>
-                </div>
-                <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">
-                  {sleepOptions.find(o => o.value === partnerSymptoms.sleep)?.label}
-                </span>
-              </div>
-            )}
-
-            {/* Dolor */}
-            {partnerSymptoms.pain && (
-              <div className="mb-4">
-                <div className="flex items-center mb-3">
-                  <Activity className="text-red-500 mr-2" size={20} />
-                  <h4 className="font-medium text-gray-900">Dolor</h4>
-                </div>
-                <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
-                  {painOptions.find(o => o.value === partnerSymptoms.pain)?.label}
-                </span>
-              </div>
-            )}
-
-            {/* Piel */}
-            {partnerSymptoms.skin && (
-              <div className="mb-4">
-                <div className="flex items-center mb-3">
-                  <Droplet className="text-blue-500 mr-2" size={20} />
-                  <h4 className="font-medium text-gray-900">Piel</h4>
-                </div>
-                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                  {skinOptions.find(o => o.value === partnerSymptoms.skin)?.label}
-                </span>
-              </div>
-            )}
-
-            {/* Digestión */}
-            {partnerSymptoms.digestion && (
-              <div className="mb-4">
-                <div className="flex items-center mb-3">
-                  <Utensils className="text-green-500 mr-2" size={20} />
-                  <h4 className="font-medium text-gray-900">Digestión</h4>
-                </div>
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                  {digestionOptions.find(o => o.value === partnerSymptoms.digestion)?.label}
-                </span>
-              </div>
-            )}
-
-            {/* Dolor de cabeza */}
-            {partnerSymptoms.headache && (
-              <div className="mb-4">
-                <div className="flex items-center mb-3">
-                  <Headphones className="text-purple-500 mr-2" size={20} />
-                  <h4 className="font-medium text-gray-900">Dolor de cabeza</h4>
-                </div>
-                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
-                  {headacheOptions.find(o => o.value === partnerSymptoms.headache)?.label}
-                </span>
-              </div>
-            )}
-
-            {/* Notas adicionales */}
-            {partnerSymptoms.notes && (
-              <div className="mt-4 bg-blue-50 rounded-xl p-4">
-                <div className="flex items-center mb-2">
-                  <Heart className="mr-2 text-blue-500" size={16} />
-                  <h4 className="font-medium text-gray-900">Notas adicionales</h4>
-                </div>
-                <p className="text-sm text-gray-700">{partnerSymptoms.notes}</p>
-              </div>
-            )}
+        {/* Libido */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Flame className="text-red-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Libido</h3>
           </div>
-        ) : (
-          <div className="bg-gray-50 rounded-2xl p-6 text-center">
-            <Heart className="mx-auto text-gray-300 mb-4" size={48} />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Sin síntomas registrados
-            </h3>
-            <p className="text-sm text-gray-600">
-              {partnerData.name} no ha registrado síntomas para esta fecha.
+          <div className="grid grid-cols-2 gap-3">
+            {libidoOptions.map((option) => (
+              <button
+                key={option.value}
+                disabled
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  partnerSymptoms?.libido === option.value
+                    ? `${option.color} ring-2 ring-blue-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-400'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Antojos */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Utensils className="text-orange-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Antojos</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {cravingsOptions.map((option) => (
+              <button
+                key={option.value}
+                disabled
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  partnerSymptoms?.cravings === option.value
+                    ? `${option.color} ring-2 ring-blue-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-400'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Nivel de energía */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Zap className="text-amber-600 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Nivel de energía</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {energyOptions.map((option) => (
+              <button
+                key={option.value}
+                disabled
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  partnerSymptoms?.energy === option.value
+                    ? `${option.color} ring-2 ring-blue-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-400'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Sueño */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Moon className="text-indigo-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Sueño</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {sleepOptions.map((option) => (
+              <button
+                key={option.value}
+                disabled
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  partnerSymptoms?.sleep === option.value
+                    ? `${option.color} ring-2 ring-blue-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-400'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Dolor */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Activity className="text-red-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Dolor</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {painOptions.map((option) => (
+              <button
+                key={option.value}
+                disabled
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  partnerSymptoms?.pain === option.value
+                    ? `${option.color} ring-2 ring-blue-500 ring-offset-2`
+                    : 'bg-gray-50 text-gray-400'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Notas */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <FileText className="text-purple-500 mr-2" size={24} />
+            <h3 className="text-lg font-semibold text-gray-900">Notas</h3>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-xl">
+            <p className="text-sm text-gray-700">
+              {partnerSymptoms?.notes || 'Sin notas'}
             </p>
           </div>
-        )}
+        </div>
       </div>
     </Layout>
   );
