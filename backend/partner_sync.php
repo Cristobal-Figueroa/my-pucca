@@ -47,29 +47,9 @@ if ($result->num_rows > 0) {
     $stmt->bind_param("ss", $partner_code, $user_id);
     $stmt->execute();
     
-    // Guardar el código del hombre en el connected_partner_code de la mujer para sincronización bidireccional
-    // Primero generamos un código para el hombre si no tiene
-    $stmt = $conn->prepare("SELECT partner_code FROM users WHERE user_id = ?");
-    $stmt->bind_param("s", $user_id);
-    $stmt->execute();
-    $man_result = $stmt->get_result();
-    $man_data = $man_result->fetch_assoc();
-    
-    $man_partner_code = $man_data['partner_code'] ?? null;
-    
-    if (empty($man_partner_code)) {
-        // Generar código único para el hombre
-        $man_partner_code = strtoupper(substr(md5(uniqid($user_id, true)), 0, 6));
-        
-        // Actualizar el código del hombre
-        $stmt = $conn->prepare("UPDATE users SET partner_code = ? WHERE user_id = ?");
-        $stmt->bind_param("ss", $man_partner_code, $user_id);
-        $stmt->execute();
-    }
-    
-    // Guardar el código del hombre en el connected_partner_code de la mujer
+    // Guardar el user_id del hombre en el connected_partner_code de la mujer para sincronización bidireccional
     $stmt = $conn->prepare("UPDATE users SET connected_partner_code = ? WHERE user_id = ?");
-    $stmt->bind_param("ss", $man_partner_code, $partner_user_id);
+    $stmt->bind_param("ss", $user_id, $partner_user_id);
     $stmt->execute();
     
     sendResponse([

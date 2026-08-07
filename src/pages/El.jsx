@@ -102,14 +102,16 @@ const El = () => {
         if (savedProfile && savedProfile.gender === 'woman') {
           setProfile(savedProfile);
           
-          // Las mujeres usan connectedPartnerCode que contiene el partner_code del hombre
-          const partnerCode = savedProfile.connectedPartnerCode;
-          if (partnerCode) {
-            // Obtener el perfil del hombre usando su partner_code
-            const partnerProfile = await getPartnerProfile(partnerCode);
+          // Las mujeres usan connectedPartnerCode que contiene el user_id del hombre
+          const partnerUserId = savedProfile.connectedPartnerCode;
+          if (partnerUserId) {
+            // Obtener el perfil del hombre usando su user_id
+            const partnerProfile = await getPartnerProfileByUserId(partnerUserId);
             if (partnerProfile) {
               setPartnerData(partnerProfile);
-              loadPartnerSymptomsForDate(selectedDate, partnerCode);
+              // El hombre no tiene partner_code, pero necesitamos algo para buscar sus síntomas
+              // Usamos su user_id directamente
+              loadPartnerSymptomsForDate(selectedDate, partnerUserId);
             }
           }
         } else if (savedProfile && savedProfile.gender !== 'woman') {

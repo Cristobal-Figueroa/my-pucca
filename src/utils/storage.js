@@ -1,25 +1,18 @@
-// Sistema de storage para guardar datos de la app (localStorage + backend)
+// Sistema de storage para guardar datos de la app (solo backend, sin localStorage)
 import { API_BASE_URL, API_ENDPOINTS, apiRequest } from '../config/api';
 
 // Exportar apiRequest para usarlo en otros componentes
 export { apiRequest };
 
-const STORAGE_KEYS = {
-  PROFILE: 'pucca_profile',
-  USER_ID: 'pucca_user_id',
-  PERIODS: 'pucca_periods',
-  SYMPTOMS: 'pucca_symptoms',
-};
+// Solo guardamos el user_id en localStorage para mantener la sesión
+const USER_ID_KEY = 'pucca_user_id';
 
 // Perfil del usuario
 export const saveProfile = async (profile) => {
   try {
-    // Guardar en localStorage como backup
-    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
-    
-    // Guardar user_id por separato
+    // Guardar user_id en localStorage para mantener la sesión
     if (profile.user_id) {
-      localStorage.setItem(STORAGE_KEYS.USER_ID, profile.user_id);
+      localStorage.setItem(USER_ID_KEY, profile.user_id);
     }
     
     // Convertir a formato snake_case para el backend
@@ -41,45 +34,45 @@ export const saveProfile = async (profile) => {
     });
     
     if (response.success) {
-      // Si el backend generó un partner_code, actualizar el perfil local
+      // Si el backend generó un partner_code, actualizar el perfil
       if (response.partner_code) {
         profile.partnerCode = response.partner_code;
-        localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
       }
       return true;
     }
     return false;
   } catch (error) {
     console.error('Error saving profile:', error);
-    // Si falla el backend, al menos está en localStorage
-    return true;
+    return false;
   }
 };
 
 export const getProfile = async () => {
   try {
-    // Primero intentar del localStorage
-    const localProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
-    if (localProfile) {
-      return JSON.parse(localProfile);
+    // Obtener user_id del localStorage
+    const userId = localStorage.getItem(USER_ID_KEY);
+    if (!userId) return null;
+
+    // Obtener perfil del backend
+    const response = await apiRequest(`${API_ENDPOINTS.GET_PROFILE}?user_id=${userId}`);
+    if (response.success && response.profile) {
+      const profile = {
+        user_id: response.profile.user_id,
+        name: response.profile.name,
+        email: response.profile.email,
+        cycleLength: response.profile.cycle_length,
+        periodLength: response.profile.period_length,
+        lastPeriodStart: response.profile.last_period_start,
+        gender: response.profile.gender,
+        partnerCode: response.profile.partner_code,
+        connectedPartnerCode: response.profile.connected_partner_code
+      };
+      return profile;
     }
-    
-    // Si no hay en localStorage, intentar del backend
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
-    if (userId) {
-      const response = await apiRequest(`${API_ENDPOINTS.GET_PROFILE}?user_id=${userId}`);
-      if (response.success && response.profile) {
-        localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(response.profile));
-        return response.profile;
-      }
-    }
-    
     return null;
   } catch (error) {
     console.error('Error getting profile:', error);
-    // Fallback a localStorage
-    const localProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
-    return localProfile ? JSON.parse(localProfile) : null;
+    return null;
   }
 };
 
@@ -97,7 +90,7 @@ export const parseLocalDate = (dateString) => {
 
 export const deleteProfile = () => {
   try {
-    localStorage.removeItem(STORAGE_KEYS.PROFILE);
+    localStorage.removeItem(USER_ID_KEY);
     return true;
   } catch (error) {
     console.error('Error deleting profile:', error);
@@ -139,7 +132,7 @@ export const savePeriodsToDB = async (periods) => {
 export const getPeriods = async () => {
   try {
     // Obtener periodos desde DB
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    const userId = localStorage.getItem(USER_ID_KEY);
     if (!userId) return [];
 
     const response = await apiRequest(`${API_ENDPOINTS.GET_PERIODS}?user_id=${userId}`);
@@ -156,7 +149,7 @@ export const getPeriods = async () => {
 export const addPeriod = async (period) => {
   try {
     // Solo enviar al backend, no usar localStorage
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    const userId = localStorage.getItem(USER_ID_KEY);
     if (!userId) return false;
 
     await apiRequest(API_ENDPOINTS.SAVE_PERIOD, {
@@ -178,7 +171,7 @@ export const addPeriod = async (period) => {
 export const updatePeriod = async (periodId, updatedPeriod) => {
   try {
     // Solo enviar al backend, no usar localStorage
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    const userId = localStorage.getItem(USER_ID_KEY);
     if (!userId) return false;
 
     await apiRequest(API_ENDPOINTS.SAVE_PERIOD, {
@@ -243,7 +236,7 @@ export const saveSymptomsToDB = async (symptoms) => {
 export const getSymptoms = async () => {
   try {
     // Obtener síntomas desde DB
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    const userId = localStorage.getItem(USER_ID_KEY);
     if (!userId) return [];
 
     const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}`);
@@ -260,7 +253,7 @@ export const getSymptoms = async () => {
 export const addSymptom = async (symptom) => {
   try {
     // Solo enviar al backend, no usar localStorage
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    const userId = localStorage.getItem(USER_ID_KEY);
     if (!userId) return false;
 
     await apiRequest(API_ENDPOINTS.SAVE_SYMPTOM, {
@@ -291,7 +284,7 @@ export const addSymptom = async (symptom) => {
 export const updateSymptom = async (symptomId, updatedSymptom) => {
   try {
     // Solo enviar al backend, no usar localStorage
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    const userId = localStorage.getItem(USER_ID_KEY);
     if (!userId) return false;
 
     await apiRequest(API_ENDPOINTS.SAVE_SYMPTOM, {
@@ -334,7 +327,7 @@ export const deleteSymptom = async (symptomId) => {
 // Obtener síntomas por fecha desde DB
 export const getSymptomsByDate = async (date) => {
   try {
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    const userId = localStorage.getItem(USER_ID_KEY);
     if (!userId) return [];
 
     // Usar fecha local para evitar problemas de zona horaria
@@ -360,7 +353,7 @@ export const getSymptomsByDate = async (date) => {
 // Obtener todos los síntomas del usuario desde DB
 export const getAllSymptoms = async () => {
   try {
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    const userId = localStorage.getItem(USER_ID_KEY);
     if (!userId) return [];
 
     const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}`);
@@ -443,12 +436,12 @@ export const getPartnerAllSymptoms = async (partnerCode) => {
   }
 };
 
-// Sincronizar pareja bidireccionalmente
+// Sincronizar con pareja
 export const syncPartner = async (partnerCode) => {
   try {
-    const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    const userId = localStorage.getItem(USER_ID_KEY);
     if (!userId) return false;
-    
+
     const response = await apiRequest(API_ENDPOINTS.PARTNER_SYNC, {
       method: 'POST',
       body: JSON.stringify({
@@ -456,20 +449,14 @@ export const syncPartner = async (partnerCode) => {
         partner_code: partnerCode
       })
     });
-    
+
     if (response.success) {
-      // Actualizar el perfil local con el código de la pareja conectada
-      const profile = await getProfile();
-      if (profile) {
-        const updatedProfile = {
-          ...profile,
-          connectedPartnerCode: response.man_partner_code
-        };
-        localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(updatedProfile));
-      }
+      // Recargar el perfil desde el backend para obtener datos actualizados
+      const updatedProfile = await getProfile();
+      return true;
     }
     
-    return response.success;
+    return false;
   } catch (error) {
     console.error('Error syncing partner:', error);
     return false;
@@ -479,11 +466,7 @@ export const syncPartner = async (partnerCode) => {
 // Limpiar todos los datos
 export const clearAllData = () => {
   try {
-    localStorage.removeItem(STORAGE_KEYS.PROFILE);
-    localStorage.removeItem(STORAGE_KEYS.USER_ID);
-    localStorage.removeItem(STORAGE_KEYS.PERIODS);
-    localStorage.removeItem(STORAGE_KEYS.SYMPTOMS);
-    // También limpiar cualquier otro dato que pueda estar cacheado
+    localStorage.removeItem(USER_ID_KEY);
     localStorage.clear();
     return true;
   } catch (error) {
