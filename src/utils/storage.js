@@ -169,6 +169,13 @@ export const getPartnerAllSymptoms = async (partnerCode) => {
   } catch { return []; }
 };
 
+export const getSymptomsByUserId = async (userId) => {
+  try {
+    const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}`);
+    return response.success && response.symptoms ? response.symptoms : [];
+  } catch { return []; }
+};
+
 export const syncPartner = async (partnerCode) => {
   const userId = getUserId();
   if (!userId) return false;

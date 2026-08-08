@@ -163,7 +163,6 @@ const Symptoms = () => {
     }
 
     const newSymptom = {
-      id: Date.now().toString(),
       date: selectedDate,
       mood: symptoms.mood,
       libido: symptoms.libido,
@@ -174,8 +173,7 @@ const Symptoms = () => {
       skin: symptoms.skin,
       digestion: symptoms.digestion,
       headache: symptoms.headache,
-      notes: symptoms.notes,
-      timestamp: new Date().toISOString()
+      notes: symptoms.notes
     };
 
     await addSymptom(newSymptom);
