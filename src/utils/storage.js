@@ -5,6 +5,15 @@ export { apiRequest };
 
 const USER_ID_KEY = 'pucca_user_id';
 
+// Función helper para obtener fecha local actual en formato YYYY-MM-DD
+export const getLocalTodayString = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 // Guardar user_id para sesión
 export const setUserId = (userId) => {
   localStorage.setItem(USER_ID_KEY, userId);
@@ -112,10 +121,24 @@ export const getSymptomsByDate = async (date) => {
   const userId = getUserId();
   if (!userId) return [];
   try {
-    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    // Si date es un string en formato YYYY-MM-DD, usarlo directamente
+    // Si es un objeto Date, convertirlo correctamente evitando problemas de zona horaria
+    let dateStr;
+    if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      dateStr = date;
+    } else {
+      // Convertir Date a string local sin problemas de zona horaria
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      dateStr = `${year}-${month}-${day}`;
+    }
     const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}&date=${dateStr}`);
     return response.success && response.symptom ? [response.symptom] : [];
-  } catch { return []; }
+  } catch (error) {
+    console.error('getSymptomsByDate - error:', error);
+    return [];
+  }
 };
 
 export const addSymptom = async (symptom) => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Smile, Flame, Utensils, Coffee, Trash2, Moon, Zap, Droplet, Activity, Headphones } from 'lucide-react';
-import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom } from '../utils/storage';
+import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom, getLocalTodayString } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Modal from '../components/Modal';
@@ -223,7 +223,7 @@ const ManSymptomsOwn = () => {
             onChange={(e) => setSelectedDate(e.target.value)}
             onClick={(e) => e.target.showPicker?.()}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
-            max={new Date().toISOString().split('T')[0]}
+            max={getLocalTodayString()}
           />
         </div>
 

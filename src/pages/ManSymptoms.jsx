@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Calendar as CalendarIcon, Smile, Flame, Utensils, Zap, Moon, AlertCircle, Droplet, Coffee, Headphones } from 'lucide-react';
-import { getProfile, getPartnerProfile, getPartnerAllSymptoms } from '../utils/storage';
+import { getProfile, getPartnerProfile, getPartnerAllSymptoms, getLocalTodayString } from '../utils/storage';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Layout from '../components/Layout';
@@ -10,7 +10,7 @@ const ManSymptoms = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [partnerData, setPartnerData] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [symptoms, setSymptoms] = useState(null);
   const [allPartnerSymptoms, setAllPartnerSymptoms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -146,10 +146,16 @@ const ManSymptoms = () => {
   }, [selectedDate]);
 
   const filterSymptomsByDate = (date, symptomsList) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
+    // Si date es string, usarlo directamente
+    let dateStr;
+    if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      dateStr = date;
+    } else {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      dateStr = `${year}-${month}-${day}`;
+    }
     
     const symptomForDate = symptomsList.find(s => s.date === dateStr);
     setSymptoms(symptomForDate || null);
@@ -264,11 +270,11 @@ const ManSymptoms = () => {
             <CalendarIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="date"
-              value={format(selectedDate, 'yyyy-MM-dd')}
-              onChange={(e) => setSelectedDate(new Date(e.target.value + 'T00:00:00'))}
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
               onClick={(e) => e.target.showPicker?.()}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
-              max={new Date().toISOString().split('T')[0]}
+              max={getLocalTodayString()}
             />
           </div>
           <p className="text-sm text-gray-600 mt-2">

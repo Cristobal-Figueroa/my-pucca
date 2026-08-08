@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Smile, Flame, Utensils, Moon, Zap, Droplet, Activity, Headphones, FileText } from 'lucide-react';
-import { getProfile, getPartnerProfile, getPartnerProfileByUserId, getSymptomsByUserId } from '../utils/storage';
+import { getProfile, getPartnerProfile, getPartnerProfileByUserId, getSymptomsByUserId, getLocalTodayString } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Layout from '../components/Layout';
@@ -299,7 +299,7 @@ const El = () => {
             onChange={(e) => setSelectedDate(e.target.value)}
             onClick={(e) => e.target.showPicker?.()}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent cursor-pointer"
-            max={new Date().toISOString().split('T')[0]}
+            max={getLocalTodayString()}
           />
         </div>
 

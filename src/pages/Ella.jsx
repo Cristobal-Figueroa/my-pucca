@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Smile, Flame, Utensils, Coffee, Trash2, Moon, Zap, Droplet, Activity, Headphones } from 'lucide-react';
-import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom, getPartnerProfile, getPartnerAllSymptoms } from '../utils/storage';
+import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom, getPartnerProfile, getPartnerAllSymptoms, getLocalTodayString } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Modal from '../components/Modal';
@@ -159,7 +159,7 @@ const Ella = () => {
       symptomsForDate = allPartnerSymptoms.filter(s => s.date === dateStr);
     } else {
       // Si es mujer, cargar sus propios síntomas
-      symptomsForDate = await getSymptomsByDate(new Date(date));
+      symptomsForDate = await getSymptomsByDate(date); // date ya es string 'yyyy-MM-dd'
     }
     
     setSavedSymptoms(symptomsForDate);
@@ -260,7 +260,7 @@ const Ella = () => {
             onChange={(e) => setSelectedDate(e.target.value)}
             onClick={(e) => e.target.showPicker?.()}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent cursor-pointer"
-            max={new Date().toISOString().split('T')[0]}
+            max={getLocalTodayString()}
           />
         </div>
 

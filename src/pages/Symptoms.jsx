@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Smile, Flame, Utensils, Coffee, Trash2, Moon, Zap, Droplet, Activity, Headphones } from 'lucide-react';
-import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom } from '../utils/storage';
+import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom, getLocalTodayString } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Modal from '../components/Modal';
 import Layout from '../components/Layout';
 
 const Symptoms = () => {
+  console.log('Componente Symptoms montado');
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  
+  const [selectedDate, setSelectedDate] = useState(getLocalTodayString());
   const [symptoms, setSymptoms] = useState({
     mood: '',
     libido: '',
@@ -117,10 +119,11 @@ const Symptoms = () => {
       }
     };
     loadProfile();
-  }, [selectedDate]);
+  }, [selectedDate, navigate]);
 
   const loadSymptomsForDate = async (date) => {
-    const symptomsForDate = await getSymptomsByDate(new Date(date));
+    // Pasar el string de fecha directamente para evitar problemas de zona horaria
+    const symptomsForDate = await getSymptomsByDate(date);
     setSavedSymptoms(symptomsForDate);
     
     if (symptomsForDate.length > 0) {
@@ -176,6 +179,7 @@ const Symptoms = () => {
       notes: symptoms.notes
     };
 
+    console.log('Guardando síntomas:', newSymptom);
     await addSymptom(newSymptom);
     await loadSymptomsForDate(selectedDate);
     
@@ -217,7 +221,7 @@ const Symptoms = () => {
             onChange={(e) => setSelectedDate(e.target.value)}
             onClick={(e) => e.target.showPicker?.()}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent cursor-pointer"
-            max={new Date().toISOString().split('T')[0]}
+            max={getLocalTodayString()}
           />
         </div>
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Lightbulb, Calendar, Droplets, Utensils, Sparkles } from 'lucide-react';
-import { getProfile, getPartnerProfile } from '../utils/storage';
+import { getProfile, getPartnerProfile, parseLocalDate } from '../utils/storage';
 import { getCyclePhase, CYCLE_PHASES } from '../utils/cycleCalculations';
 import { differenceInDays } from 'date-fns';
 import Layout from '../components/Layout';
@@ -37,7 +37,7 @@ const ManTips = () => {
               const today = new Date();
               const phase = getCyclePhase(
                 today,
-                new Date(partnerProfile.last_period_start),
+                parseLocalDate(partnerProfile.last_period_start),
                 partnerProfile.cycle_length,
                 partnerProfile.period_length
               );
