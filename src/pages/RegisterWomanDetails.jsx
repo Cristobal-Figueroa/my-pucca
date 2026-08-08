@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiRequest, setUserId } from '../utils/storage';
+import { ArrowLeft, ArrowRight, Calendar } from 'lucide-react';
+import { apiRequest, setUserId, getLocalTodayString } from '../utils/storage';
 import { API_ENDPOINTS } from '../config/api';
 import Modal from '../components/Modal';
 import Layout from '../components/Layout';
@@ -9,7 +10,7 @@ const RegisterWomanDetails = () => {
   const navigate = useNavigate();
   const [cycleLength, setCycleLength] = useState(28);
   const [periodLength, setPeriodLength] = useState(5);
-  const [lastPeriodStart, setLastPeriodStart] = useState('');
+  const [lastPeriodStart, setLastPeriodStart] = useState(getLocalTodayString());
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [tempData, setTempData] = useState(null);
@@ -30,6 +31,12 @@ const RegisterWomanDetails = () => {
       return;
     }
 
+    if (!lastPeriodStart) {
+      setModalMessage('Por favor selecciona la fecha de inicio de tu último periodo.');
+      setShowModal(true);
+      return;
+    }
+
     if (!tempData) {
       setModalMessage('Error al cargar los datos. Por favor regístrate nuevamente.');
       setShowModal(true);
@@ -37,17 +44,21 @@ const RegisterWomanDetails = () => {
     }
 
     try {
+      const registerData = {
+        name: tempData.name,
+        email: tempData.email,
+        password: tempData.password,
+        cycle_length: cycleLength,
+        period_length: periodLength,
+        last_period_start: lastPeriodStart,
+        gender: 'woman'
+      };
+      
+      console.log('Enviando datos de registro:', registerData);
+      
       const response = await apiRequest(API_ENDPOINTS.REGISTER, {
         method: 'POST',
-        body: JSON.stringify({
-          name: tempData.name,
-          email: tempData.email,
-          password: tempData.password,
-          cycleLength,
-          periodLength,
-          lastPeriodStart,
-          gender: 'woman'
-        })
+        body: JSON.stringify(registerData)
       });
 
       if (response.success) {
@@ -174,6 +185,7 @@ const RegisterWomanDetails = () => {
                 onChange={(e) => setLastPeriodStart(e.target.value)}
                 onClick={(e) => e.target.showPicker?.()}
                 className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent cursor-pointer"
+                max={getLocalTodayString()}
               />
             </div>
           </div>

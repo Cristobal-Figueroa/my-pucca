@@ -187,6 +187,11 @@ const Home = () => {
                 // Calcular día actual usando differenceInDays (igual que getCyclePhase en cycleCalculations.js)
                 const today = new Date();
                 const lastPeriodStart = new Date(profile.lastPeriodStart);
+                
+                // Validar que la fecha sea válida
+                if (isNaN(lastPeriodStart.getTime()) || lastPeriodStart.getFullYear() < 2000) {
+                  return null; // No renderizar el círculo si la fecha es inválida
+                }
                 const daysSinceLastPeriod = differenceInDays(today, lastPeriodStart);
                 const zeroIndexedDay = ((daysSinceLastPeriod % profile.cycleLength) + profile.cycleLength) % profile.cycleLength; // 0-indexed (0-27)
                 const currentDay = zeroIndexedDay + 1; // 1-indexed (1-28)

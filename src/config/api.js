@@ -45,7 +45,9 @@ export const apiRequest = async (endpoint, options = {}) => {
     const response = await fetch(url, mergedOptions);
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Intentar leer el mensaje de error del cuerpo de la respuesta
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
     }
     
     return await response.json();

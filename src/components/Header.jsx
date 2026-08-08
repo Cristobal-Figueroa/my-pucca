@@ -38,7 +38,7 @@ const Header = ({ showSettings = true, showTips = true }) => {
       <div className="max-w-md mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <img src="/logo.jpg" alt="Mi Pucca" className="w-8 h-8 rounded-full mr-2 object-cover" />
+            <img src="/logo.jpg" alt="Mi Pucca" className="w-10 h-10 mr-2 object-cover" />
             {profile ? (
               <>
                 <h1 className="text-xl font-bold text-gray-900">

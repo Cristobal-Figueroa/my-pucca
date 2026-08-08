@@ -29,6 +29,19 @@ if (strlen($password) < 6) {
     sendError('La contraseña debe tener al menos 6 caracteres');
 }
 
+if ($gender === 'woman' && empty($last_period_start)) {
+    sendError('La fecha del último periodo es requerida para mujeres');
+}
+
+// Validar formato de fecha
+if (!empty($last_period_start) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $last_period_start)) {
+    sendError('Formato de fecha inválido. Usa YYYY-MM-DD');
+}
+
+// Log para debugging
+error_log("Register attempt - last_period_start: " . $last_period_start);
+error_log("Register attempt - full data: " . print_r($data, true));
+
 // Verificar si el correo ya existe
 $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);
