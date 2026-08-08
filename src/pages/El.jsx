@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Smile, Flame, Utensils, Moon, Zap, Droplet, Activity, Headphones, FileText } from 'lucide-react';
-import { getProfile, getPartnerProfile, getPartnerProfileByUserId, getPartnerAllSymptoms } from '../utils/storage';
+import { getProfile, getPartnerProfile, getPartnerProfileByUserId, getSymptomsByUserId } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Layout from '../components/Layout';
@@ -127,9 +127,9 @@ const El = () => {
     loadProfile();
   }, [selectedDate]);
 
-  const loadPartnerSymptomsForDate = async (date, partnerCode) => {
+  const loadPartnerSymptomsForDate = async (date, partnerUserId) => {
     try {
-      const allSymptoms = await getPartnerAllSymptoms(partnerCode);
+      const allSymptoms = await getSymptomsByUserId(partnerUserId);
       const symptomForDate = allSymptoms.find(s => s.date === date);
       setPartnerSymptoms(symptomForDate || null);
     } catch (error) {
