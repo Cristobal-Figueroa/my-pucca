@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProfile, saveProfile, clearAllData, setUserId } from '../utils/storage';
+import { getProfile, saveProfile, clearAllData, setUserId, apiRequest } from '../utils/storage';
 import Modal from '../components/Modal';
 import Layout from '../components/Layout';
 import { API_ENDPOINTS } from '../config/api';
