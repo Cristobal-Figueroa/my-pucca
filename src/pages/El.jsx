@@ -277,8 +277,22 @@ const El = () => {
     return (
     <Layout>
         <div className="flex items-center justify-center min-h-64">
-          <div className="text-center">
-            <p className="text-gray-600">No se pudieron cargar los datos.</p>
+          <div className="text-center max-w-md mx-auto p-6">
+            <div className="bg-pink-50 rounded-full p-4 inline-block mb-4">
+              <span className="text-4xl">💑</span>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              ¡Sincroniza con tu pareja!
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Para ver cómo se siente tu pareja hoy, ve a "Pareja" en el menú superior para obtener tu código y compartirlo con él.
+            </p>
+            <button
+              onClick={() => navigate('/partner')}
+              className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium"
+            >
+              Ir a Pareja
+            </button>
           </div>
         </div>
       </Layout>

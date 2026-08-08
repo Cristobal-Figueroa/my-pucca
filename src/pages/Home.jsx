@@ -169,6 +169,11 @@ const Home = () => {
                 const lutealPercent = 14 / profile.cycleLength; // 14 días fase lútea (después de ovulación)
                 const follicularPercent = 1 - menstruationPercent - ovulationPercent - lutealPercent;
                 
+                // Validar que los porcentajes sean válidos
+                if (follicularPercent < 0 || menstruationPercent < 0 || ovulationPercent < 0 || lutealPercent < 0) {
+                  return null; // No renderizar el círculo si los porcentajes son inválidos
+                }
+                
                 const menstruationLength = circumference * menstruationPercent;
                 const follicularLength = circumference * follicularPercent;
                 const ovulationLength = circumference * ovulationPercent;
@@ -191,6 +196,12 @@ const Home = () => {
                 // Validar que la fecha sea válida
                 if (isNaN(lastPeriodStart.getTime()) || lastPeriodStart.getFullYear() < 2000) {
                   return null; // No renderizar el círculo si la fecha es inválida
+                }
+                
+                // Validar que los valores del perfil sean válidos
+                if (!profile.cycleLength || profile.cycleLength <= 0 || 
+                    !profile.periodLength || profile.periodLength <= 0) {
+                  return null; // No renderizar el círculo si los valores son inválidos
                 }
                 const daysSinceLastPeriod = differenceInDays(today, lastPeriodStart);
                 const zeroIndexedDay = ((daysSinceLastPeriod % profile.cycleLength) + profile.cycleLength) % profile.cycleLength; // 0-indexed (0-27)

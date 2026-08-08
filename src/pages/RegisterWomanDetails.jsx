@@ -54,8 +54,6 @@ const RegisterWomanDetails = () => {
         gender: 'woman'
       };
       
-      console.log('Enviando datos de registro:', registerData);
-      
       const response = await apiRequest(API_ENDPOINTS.REGISTER, {
         method: 'POST',
         body: JSON.stringify(registerData)

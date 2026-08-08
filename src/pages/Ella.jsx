@@ -127,13 +127,13 @@ const Ella = () => {
               loadSymptomsForDate(selectedDate, partnerProfile.partner_code);
             } else {
               // Si no hay partnerData, mostrar error
-              setModalMessage('No se encontró el perfil de tu pareja. Verifica el código de sincronización.');
+              setModalMessage('No se encontró el perfil de tu pareja. Ve a "Pareja" en el menú para verificar tu código de sincronización.');
               setShowModal(true);
               loadSymptomsForDate(selectedDate, null);
             }
           } else {
             // Si no hay partnerCode, mostrar error
-            setModalMessage('No tienes una pareja sincronizada. Ve a configuración para sincronizarte.');
+            setModalMessage('¡Sincroniza con tu pareja! Ve a "Pareja" en el menú superior para obtener tu código y compartirlo con él.');
             setShowModal(true);
             loadSymptomsForDate(selectedDate, null);
           }
