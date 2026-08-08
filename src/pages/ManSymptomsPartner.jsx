@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, Calendar as CalendarIcon, Smile, Flame, Utensils, Zap, Moon, AlertCircle, Droplet, Coffee, Headphones } from 'lucide-react';
+import { ArrowLeft, Heart, Calendar as CalendarIcon, Smile, Flame, Utensils, Zap, Moon, AlertCircle, Droplet, Coffee, Headphones, Activity } from 'lucide-react';
 import { getProfile, getPartnerProfile, getSymptomsByUserId, getLocalTodayString } from '../utils/storage';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -100,25 +100,21 @@ const ManSymptomsPartner = () => {
         setError(null);
         
         const savedProfile = await getProfile();
-        console.log('ManSymptomsPartner - savedProfile:', savedProfile);
         
         if (savedProfile && savedProfile.gender === 'man') {
           setProfile(savedProfile);
           
           // Los hombres usan connectedPartnerCode (código de la mujer)
           const partnerCodeToUse = savedProfile.connectedPartnerCode;
-          console.log('ManSymptomsPartner - partnerCodeToUse:', partnerCodeToUse);
           
           // Cargar datos reales de la pareja usando el connectedPartnerCode
           if (partnerCodeToUse) {
             const partnerProfile = await getPartnerProfile(partnerCodeToUse);
-            console.log('ManSymptomsPartner - partnerProfile:', partnerProfile);
             
             if (partnerProfile) {
               setPartnerData(partnerProfile);
               // Cargar todos los síntomas de la pareja usando su user_id directamente
               const allSymptoms = await getSymptomsByUserId(partnerProfile.user_id);
-              console.log('ManSymptomsPartner - allSymptoms:', allSymptoms);
               setAllPartnerSymptoms(allSymptoms);
               // Filtrar síntomas del día actual
               filterSymptomsByDate(selectedDate, allSymptoms);
@@ -150,7 +146,6 @@ const ManSymptomsPartner = () => {
   }, [selectedDate]);
 
   const filterSymptomsByDate = (date, symptomsList) => {
-    console.log('filterSymptomsByDate - date:', date, 'symptomsList.length:', symptomsList.length);
     // Si date es string, usarlo directamente
     let dateStr;
     if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
@@ -162,10 +157,109 @@ const ManSymptomsPartner = () => {
       dateStr = `${year}-${month}-${day}`;
     }
     
-    console.log('filterSymptomsByDate - dateStr:', dateStr);
     const symptomForDate = symptomsList.find(s => s.date === dateStr);
-    console.log('filterSymptomsByDate - symptomForDate:', symptomForDate);
     setSymptoms(symptomForDate || null);
+  };
+
+  const getGeneralState = () => {
+    if (!symptoms) return { state: 'Sin datos', color: 'bg-gray-100 text-gray-800', bgColor: 'bg-gray-100', borderColor: 'border-gray-300' };
+    
+    let score = 0;
+    let count = 0;
+
+    if (symptoms.mood === 'happy' || symptoms.mood === 'energetic' || symptoms.mood === 'confident' || symptoms.mood === 'calm') {
+      score += 2;
+    } else if (symptoms.mood === 'sad' || symptoms.mood === 'anxious' || symptoms.mood === 'irritable' || symptoms.mood === 'stressed' || symptoms.mood === 'tired') {
+      score -= 1;
+    }
+    count++;
+
+    if (symptoms.energy === 'very_high' || symptoms.energy === 'high') {
+      score += 2;
+    } else if (symptoms.energy === 'low' || symptoms.energy === 'very_low') {
+      score -= 1;
+    }
+    count++;
+
+    if (symptoms.sleep === 'excellent' || symptoms.sleep === 'good') {
+      score += 1;
+    } else if (symptoms.sleep === 'poor' || symptoms.sleep === 'terrible') {
+      score -= 1;
+    }
+    count++;
+
+    if (symptoms.pain === 'severe') {
+      score -= 2;
+    } else if (symptoms.pain === 'moderate') {
+      score -= 1;
+    }
+    count++;
+
+    if (symptoms.headache === 'severe' || symptoms.headache === 'migraine') {
+      score -= 2;
+    } else if (symptoms.headache === 'moderate') {
+      score -= 1;
+    }
+    count++;
+
+    if (symptoms.digestion === 'nausea' || symptoms.digestion === 'indigestion') {
+      score -= 1;
+    }
+    count++;
+
+    const avgScore = count > 0 ? score / count : 0;
+
+    if (avgScore >= 1) {
+      return { state: 'Excelente', color: 'bg-green-100 text-green-800', bgColor: 'bg-green-100', borderColor: 'border-green-300' };
+    } else if (avgScore >= 0.3) {
+      return { state: 'Bien', color: 'bg-blue-100 text-blue-800', bgColor: 'bg-blue-100', borderColor: 'border-blue-300' };
+    } else if (avgScore >= -0.3) {
+      return { state: 'Regular', color: 'bg-yellow-100 text-yellow-800', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-300' };
+    } else if (avgScore >= -1) {
+      return { state: 'Cansado', color: 'bg-orange-100 text-orange-800', bgColor: 'bg-orange-100', borderColor: 'border-orange-300' };
+    } else {
+      return { state: 'Necesita descanso', color: 'bg-red-100 text-red-800', bgColor: 'bg-red-100', borderColor: 'border-red-300' };
+    }
+  };
+
+  const getPersonalizedAdvice = () => {
+    if (!symptoms) return 'Sin datos para dar consejo';
+
+    const advice = [];
+
+    if (symptoms.mood === 'stressed' || symptoms.mood === 'anxious') {
+      advice.push('Tal vez deberías ayudarle a relajarse con un masaje o tiempo tranquilo juntos.');
+    }
+
+    if (symptoms.energy === 'low' || symptoms.energy === 'very_low') {
+      advice.push('Tal vez deberías sugerirle descansar y evitar actividades intensas hoy.');
+    }
+
+    if (symptoms.sleep === 'poor' || symptoms.sleep === 'terrible') {
+      advice.push('Tal vez deberías ayudarle a tener una noche de descanso mejor.');
+    }
+
+    if (symptoms.pain === 'moderate' || symptoms.pain === 'severe') {
+      advice.push('Tal vez deberías ofrecerle apoyo y medicamentos si los necesita.');
+    }
+
+    if (symptoms.headache === 'moderate' || symptoms.headache === 'severe' || symptoms.headache === 'migraine') {
+      advice.push('Tal vez deberías mantener el ambiente tranquilo y con poca luz.');
+    }
+
+    if (symptoms.libido === 'very_high' || symptoms.libido === 'high') {
+      advice.push('Tal vez deberías aprovechar este momento para intimidad especial.');
+    }
+
+    if (symptoms.mood === 'happy' || symptoms.mood === 'energetic') {
+      advice.push('Tal vez deberías planear algo divertido juntos mientras tiene energía.');
+    }
+
+    if (advice.length === 0) {
+      return 'Todo parece estar bien. Tal vez deberías simplemente disfrutar el tiempo juntos.';
+    }
+
+    return advice[0];
   };
 
   const getSymptomIcon = (category) => {
@@ -291,35 +385,50 @@ const ManSymptomsPartner = () => {
 
         {/* Síntomas del día */}
         {symptoms ? (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Heart className="mr-2 text-pink-500" size={20} />
-              Síntomas del {format(selectedDate, "d 'de' MMMM", { locale: es })}
-            </h2>
-
-            {/* Estado de ánimo */}
-            {symptoms.mood && (
-              <div className="mb-4">
-                <div className="flex items-center mb-3">
-                  <Smile className="text-pink-500 mr-2" size={20} />
-                  <h3 className="text-lg font-semibold text-gray-900">Estado de ánimo</h3>
+          <div className="space-y-6">
+            {/* Card de estado general - igual a la página El */}
+            <div className={`${getGeneralState().bgColor} bg-opacity-70 rounded-2xl p-6 text-gray-900 shadow-lg backdrop-blur-sm border-2 ${getGeneralState().borderColor}`}>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm opacity-75">Estado de hoy</p>
+                  <p className="text-2xl font-bold">{partnerData.name}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {moodOptions.map((option) => (
-                    <div
-                      key={option.value}
-                      className={`p-3 rounded-xl font-medium ${
-                        symptoms.mood === option.value
-                          ? option.color
-                          : 'bg-gray-50 text-gray-400'
-                      }`}
-                    >
-                      {option.label}
-                    </div>
-                  ))}
-                </div>
+                <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getGeneralState().color}`}>
+                  {getGeneralState().state}
+                </span>
               </div>
-            )}
+              <div className="bg-white/50 rounded-xl p-4">
+                <p className="text-sm">
+                  💡 {getPersonalizedAdvice()}
+                </p>
+              </div>
+            </div>
+
+            {/* Detalle de síntomas */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              {/* Estado de ánimo */}
+              {symptoms.mood && (
+                <div className="mb-4">
+                  <div className="flex items-center mb-3">
+                    <Smile className="text-blue-500 mr-2" size={24} />
+                    <h3 className="text-lg font-semibold text-gray-900">Estado de ánimo</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {moodOptions.map((option) => (
+                      <div
+                        key={option.value}
+                        className={`p-3 rounded-xl font-medium ${
+                          symptoms.mood === option.value
+                            ? `${option.color} ring-2 ring-blue-500 ring-offset-2`
+                            : 'bg-gray-50 text-gray-400'
+                        }`}
+                      >
+                        {option.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             {/* Libido */}
             {symptoms.libido && (
@@ -525,6 +634,7 @@ const ManSymptomsPartner = () => {
                 </p>
               </div>
             )}
+            </div>
           </div>
         ) : (
           <div className="bg-white rounded-2xl p-6 shadow-sm text-center">
