@@ -124,7 +124,7 @@ const ManSymptomsOwn = () => {
   }, [selectedDate]);
 
   const loadSymptomsForDate = async (date) => {
-    const symptomsForDate = await getSymptomsByDate(new Date(date));
+    const symptomsForDate = await getSymptomsByDate(date); // Pasar string directamente
     setSavedSymptoms(symptomsForDate);
     
     if (symptomsForDate.length > 0) {
@@ -167,7 +167,6 @@ const ManSymptomsOwn = () => {
     }
 
     const newSymptom = {
-      id: Date.now().toString(),
       date: selectedDate,
       mood: symptoms.mood,
       libido: symptoms.libido,
@@ -178,8 +177,7 @@ const ManSymptomsOwn = () => {
       skin: symptoms.skin,
       digestion: symptoms.digestion,
       headache: symptoms.headache,
-      notes: symptoms.notes,
-      timestamp: new Date().toISOString()
+      notes: symptoms.notes
     };
 
     await addSymptom(newSymptom);
