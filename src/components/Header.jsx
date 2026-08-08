@@ -17,6 +17,11 @@ const Header = ({ showSettings = true, showTips = true }) => {
     loadProfile();
   }, []);
 
+  // No mostrar header si no hay sesión
+  if (!profile) {
+    return null;
+  }
+
   // Ocultar consejos si el usuario es hombre
   const shouldShowTips = showTips && profile?.gender !== 'man';
 
