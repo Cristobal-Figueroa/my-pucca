@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Calendar as CalendarIcon, Smile, Flame, Utensils, Zap, Moon, AlertCircle, Droplet, Coffee, Headphones } from 'lucide-react';
-import { getProfile, getPartnerProfile, getPartnerAllSymptoms, getLocalTodayString } from '../utils/storage';
+import { getProfile, getPartnerProfile, getSymptomsByUserId, getLocalTodayString } from '../utils/storage';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Layout from '../components/Layout';
@@ -100,21 +100,25 @@ const ManSymptomsPartner = () => {
         setError(null);
         
         const savedProfile = await getProfile();
+        console.log('ManSymptomsPartner - savedProfile:', savedProfile);
         
         if (savedProfile && savedProfile.gender === 'man') {
           setProfile(savedProfile);
           
           // Los hombres usan connectedPartnerCode (código de la mujer)
           const partnerCodeToUse = savedProfile.connectedPartnerCode;
+          console.log('ManSymptomsPartner - partnerCodeToUse:', partnerCodeToUse);
           
           // Cargar datos reales de la pareja usando el connectedPartnerCode
           if (partnerCodeToUse) {
             const partnerProfile = await getPartnerProfile(partnerCodeToUse);
+            console.log('ManSymptomsPartner - partnerProfile:', partnerProfile);
             
             if (partnerProfile) {
               setPartnerData(partnerProfile);
-              // Cargar todos los síntomas de la pareja usando su partner_code
-              const allSymptoms = await getPartnerAllSymptoms(partnerProfile.partner_code);
+              // Cargar todos los síntomas de la pareja usando su user_id directamente
+              const allSymptoms = await getSymptomsByUserId(partnerProfile.user_id);
+              console.log('ManSymptomsPartner - allSymptoms:', allSymptoms);
               setAllPartnerSymptoms(allSymptoms);
               // Filtrar síntomas del día actual
               filterSymptomsByDate(selectedDate, allSymptoms);
@@ -146,6 +150,7 @@ const ManSymptomsPartner = () => {
   }, [selectedDate]);
 
   const filterSymptomsByDate = (date, symptomsList) => {
+    console.log('filterSymptomsByDate - date:', date, 'symptomsList.length:', symptomsList.length);
     // Si date es string, usarlo directamente
     let dateStr;
     if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
@@ -157,7 +162,9 @@ const ManSymptomsPartner = () => {
       dateStr = `${year}-${month}-${day}`;
     }
     
+    console.log('filterSymptomsByDate - dateStr:', dateStr);
     const symptomForDate = symptomsList.find(s => s.date === dateStr);
+    console.log('filterSymptomsByDate - symptomForDate:', symptomForDate);
     setSymptoms(symptomForDate || null);
   };
 

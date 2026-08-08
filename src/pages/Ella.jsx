@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Smile, Flame, Utensils, Coffee, Trash2, Moon, Zap, Droplet, Activity, Headphones } from 'lucide-react';
-import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom, getPartnerProfile, getPartnerAllSymptoms, getLocalTodayString } from '../utils/storage';
+import { getProfile, addSymptom, getSymptomsByDate, deleteSymptom, getPartnerProfile, getPartnerAllSymptoms, getLocalTodayString, parseLocalDate } from '../utils/storage';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Modal from '../components/Modal';
@@ -12,7 +12,7 @@ const Ella = () => {
   const [profile, setProfile] = useState(null);
   const [partnerData, setPartnerData] = useState(null);
   const [isManViewing, setIsManViewing] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedDate, setSelectedDate] = useState(getLocalTodayString());
   const [symptoms, setSymptoms] = useState({
     mood: '',
     libido: '',
@@ -150,22 +150,29 @@ const Ella = () => {
   }, [selectedDate]);
 
   const loadSymptomsForDate = async (date, partnerCode = null) => {
+    console.log('loadSymptomsForDate - date:', date, 'partnerCode:', partnerCode, 'isManViewing:', isManViewing);
     let symptomsForDate = [];
     
     if (isManViewing && partnerCode) {
       // Si es hombre, cargar síntomas de la pareja usando el partnerCode de la mujer
+      console.log('Cargando síntomas de la pareja con partnerCode:', partnerCode);
       const allPartnerSymptoms = await getPartnerAllSymptoms(partnerCode);
+      console.log('allPartnerSymptoms:', allPartnerSymptoms);
       const dateStr = date; // selectedDate ya viene en formato 'yyyy-MM-dd'
       symptomsForDate = allPartnerSymptoms.filter(s => s.date === dateStr);
+      console.log('symptomsForDate filtrados para fecha', dateStr, ':', symptomsForDate);
     } else {
       // Si es mujer, cargar sus propios síntomas
+      console.log('Cargando síntomas propios');
       symptomsForDate = await getSymptomsByDate(date); // date ya es string 'yyyy-MM-dd'
+      console.log('symptomsForDate propios:', symptomsForDate);
     }
     
     setSavedSymptoms(symptomsForDate);
     
     if (symptomsForDate.length > 0) {
       const latestSymptom = symptomsForDate[symptomsForDate.length - 1];
+      console.log('latestSymptom:', latestSymptom);
       setSymptoms({
         mood: latestSymptom.mood || '',
         libido: latestSymptom.libido || '',
@@ -179,6 +186,7 @@ const Ella = () => {
         notes: latestSymptom.notes || ''
       });
     } else {
+      console.log('No hay síntomas para esta fecha');
       setSymptoms({
         mood: '',
         libido: '',
@@ -204,7 +212,6 @@ const Ella = () => {
     }
 
     const newSymptom = {
-      id: Date.now().toString(),
       date: selectedDate,
       mood: symptoms.mood,
       libido: symptoms.libido,
@@ -215,8 +222,7 @@ const Ella = () => {
       skin: symptoms.skin,
       digestion: symptoms.digestion,
       headache: symptoms.headache,
-      notes: symptoms.notes,
-      timestamp: new Date().toISOString()
+      notes: symptoms.notes
     };
 
     await addSymptom(newSymptom);

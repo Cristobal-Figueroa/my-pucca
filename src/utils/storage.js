@@ -171,9 +171,14 @@ export const deleteSymptom = async () => true;
 // Pareja - directo a DB
 export const getPartnerProfile = async (partnerCode) => {
   try {
+    console.log('getPartnerProfile - partnerCode:', partnerCode);
     const response = await apiRequest(`${API_ENDPOINTS.GET_PARTNER_PROFILE}?partner_code=${partnerCode}`);
+    console.log('getPartnerProfile - response:', response);
     return response.success && response.profile ? response.profile : null;
-  } catch { return null; }
+  } catch (error) {
+    console.error('getPartnerProfile - error:', error);
+    return null;
+  }
 };
 
 export const getPartnerProfileByUserId = async (userId) => {
@@ -185,18 +190,33 @@ export const getPartnerProfileByUserId = async (userId) => {
 
 export const getPartnerAllSymptoms = async (partnerCode) => {
   try {
+    console.log('getPartnerAllSymptoms - partnerCode:', partnerCode);
     const partnerProfile = await getPartnerProfile(partnerCode);
-    if (!partnerProfile?.user_id) return [];
+    console.log('getPartnerAllSymptoms - partnerProfile:', partnerProfile);
+    if (!partnerProfile?.user_id) {
+      console.log('getPartnerAllSymptoms - no user_id in partnerProfile');
+      return [];
+    }
     const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${partnerProfile.user_id}`);
+    console.log('getPartnerAllSymptoms - response:', response);
     return response.success && response.symptoms ? response.symptoms : [];
-  } catch { return []; }
+  } catch (error) {
+    console.error('getPartnerAllSymptoms - error:', error);
+    return [];
+  }
 };
 
+// Nueva función para obtener síntomas directamente por user_id
 export const getSymptomsByUserId = async (userId) => {
   try {
+    console.log('getSymptomsByUserId - userId:', userId);
     const response = await apiRequest(`${API_ENDPOINTS.GET_SYMPTOMS}?user_id=${userId}`);
+    console.log('getSymptomsByUserId - response:', response);
     return response.success && response.symptoms ? response.symptoms : [];
-  } catch { return []; }
+  } catch (error) {
+    console.error('getSymptomsByUserId - error:', error);
+    return [];
+  }
 };
 
 export const syncPartner = async (partnerCode) => {
