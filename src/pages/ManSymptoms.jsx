@@ -104,14 +104,17 @@ const ManSymptoms = () => {
         if (savedProfile && savedProfile.gender === 'man') {
           setProfile(savedProfile);
           
-          // Cargar datos reales de la pareja usando el partnerCode
-          if (savedProfile.partnerCode) {
-            const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+          // Los hombres usan connectedPartnerCode (código de la mujer)
+          const partnerCodeToUse = savedProfile.connectedPartnerCode;
+          
+          // Cargar datos reales de la pareja usando el connectedPartnerCode
+          if (partnerCodeToUse) {
+            const partnerProfile = await getPartnerProfile(partnerCodeToUse);
             
             if (partnerProfile) {
               setPartnerData(partnerProfile);
-              // Cargar todos los síntomas de la pareja
-              const allSymptoms = await getPartnerAllSymptoms(savedProfile.partnerCode);
+              // Cargar todos los síntomas de la pareja usando su partner_code
+              const allSymptoms = await getPartnerAllSymptoms(partnerProfile.partner_code);
               setAllPartnerSymptoms(allSymptoms);
               // Filtrar síntomas del día actual
               filterSymptomsByDate(selectedDate, allSymptoms);

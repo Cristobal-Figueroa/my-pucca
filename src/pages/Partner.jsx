@@ -23,10 +23,10 @@ const Partner = () => {
         setProfile(savedProfile);
         
         // Si es hombre, cargar el código de pareja ya guardado
-        if (savedProfile.gender === 'man' && savedProfile.partnerCode) {
-          setPartnerCode(savedProfile.partnerCode);
+        if (savedProfile.gender === 'man' && savedProfile.connectedPartnerCode) {
+          setPartnerCode(savedProfile.connectedPartnerCode);
           // Intentar cargar el nombre de la pareja
-          const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+          const partnerProfile = await getPartnerProfile(savedProfile.connectedPartnerCode);
           if (partnerProfile) {
             setPartnerName(partnerProfile.name);
             setIsValid(true);
@@ -100,10 +100,10 @@ const Partner = () => {
       setIsValid(true);
       setPartnerName(partnerProfile.name);
       
-      // Guardar el código en el perfil del hombre
+      // Guardar el código en el perfil del hombre usando connectedPartnerCode
       const updatedProfile = {
         ...profile,
-        partnerCode: partnerCode.toUpperCase()
+        connectedPartnerCode: partnerCode.toUpperCase()
       };
       await saveProfile(updatedProfile);
       setProfile(updatedProfile);

@@ -26,8 +26,10 @@ const ManCalendar = () => {
         if (savedProfile && savedProfile.gender === 'man') {
           setProfile(savedProfile);
           
-          if (savedProfile.partnerCode) {
-            const partnerProfile = await getPartnerProfile(savedProfile.partnerCode);
+          // Los hombres usan connectedPartnerCode (código de la mujer)
+          const partnerCodeToUse = savedProfile.connectedPartnerCode;
+          if (partnerCodeToUse) {
+            const partnerProfile = await getPartnerProfile(partnerCodeToUse);
             if (partnerProfile) {
               setPartnerData(partnerProfile);
               generateCalendar(partnerProfile, currentDate);

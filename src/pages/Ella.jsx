@@ -123,14 +123,18 @@ const Ella = () => {
             const partnerProfile = await getPartnerProfile(partnerCodeToUse);
             if (partnerProfile) {
               setPartnerData(partnerProfile);
-              // Cargar síntomas después de cargar partnerData
+              // Cargar síntomas usando el partnerCode de la mujer (su propio código)
               loadSymptomsForDate(selectedDate, partnerProfile.partner_code);
             } else {
-              // Si no hay partnerData, cargar síntomas vacíos
+              // Si no hay partnerData, mostrar error
+              setModalMessage('No se encontró el perfil de tu pareja. Verifica el código de sincronización.');
+              setShowModal(true);
               loadSymptomsForDate(selectedDate, null);
             }
           } else {
-            // Si no hay partnerCode, cargar síntomas vacíos
+            // Si no hay partnerCode, mostrar error
+            setModalMessage('No tienes una pareja sincronizada. Ve a configuración para sincronizarte.');
+            setShowModal(true);
             loadSymptomsForDate(selectedDate, null);
           }
         } else {
@@ -149,9 +153,9 @@ const Ella = () => {
     let symptomsForDate = [];
     
     if (isManViewing && partnerCode) {
-      // Si es hombre, cargar síntomas de la pareja usando el partnerCode pasado
+      // Si es hombre, cargar síntomas de la pareja usando el partnerCode de la mujer
       const allPartnerSymptoms = await getPartnerAllSymptoms(partnerCode);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = date; // selectedDate ya viene en formato 'yyyy-MM-dd'
       symptomsForDate = allPartnerSymptoms.filter(s => s.date === dateStr);
     } else {
       // Si es mujer, cargar sus propios síntomas
