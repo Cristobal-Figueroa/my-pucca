@@ -255,7 +255,7 @@ const ManTips = () => {
 
   if (loading) {
     return (
-      <Layout showSettings={false}>
+      <Layout>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
@@ -268,7 +268,7 @@ const ManTips = () => {
 
   if (error) {
     return (
-      <Layout showSettings={false}>
+      <Layout>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <div className="bg-red-50 rounded-full p-4 inline-block mb-4">
@@ -289,7 +289,7 @@ const ManTips = () => {
 
   if (!profile || !partnerData || !currentPhase) {
     return (
-      <Layout showSettings={false}>
+      <Layout>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <p className="text-gray-600">No se pudieron cargar los datos.</p>
@@ -302,7 +302,7 @@ const ManTips = () => {
   const currentTips = tipsByPhase[currentPhase];
 
   return (
-    <Layout showSettings={false}>
+    <Layout>
       <div className="space-y-6">
             {/* Hero Section */}
             <div className={`bg-gradient-to-r ${currentTips.color} rounded-3xl p-6 text-white shadow-lg`}>
