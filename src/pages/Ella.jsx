@@ -253,7 +253,7 @@ const Ella = () => {
   }
 
   return (
-    <Layout title="Ella" showBackButton={false}>
+    <Layout>
       <div className="space-y-6">
         {/* Selector de fecha */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">

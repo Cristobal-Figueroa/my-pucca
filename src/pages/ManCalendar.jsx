@@ -104,7 +104,7 @@ const ManCalendar = () => {
 
   if (loading) {
     return (
-      <Layout title="Cargando..." showBackButton={false} showSettings={false}>
+      <Layout showSettings={false}>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
@@ -117,7 +117,7 @@ const ManCalendar = () => {
 
   if (error) {
     return (
-      <Layout title="Error" showBackButton={false} showSettings={false}>
+      <Layout showSettings={false}>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <div className="bg-red-50 rounded-full p-4 inline-block mb-4">
@@ -138,7 +138,7 @@ const ManCalendar = () => {
 
   if (!profile || !partnerData) {
     return (
-      <Layout title="Error" showBackButton={false} showSettings={false}>
+      <Layout showSettings={false}>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <p className="text-gray-600">No se pudieron cargar los datos.</p>
@@ -153,7 +153,7 @@ const ManCalendar = () => {
   const startDay = firstDayOfMonth.getDay();
 
   return (
-    <Layout title={format(currentDate, 'MMMM yyyy', { locale: es })} showBackButton={true} showSettings={false}>
+    <Layout showSettings={false}>
       <div className="space-y-6">
         {/* Navegación de meses */}
         <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm">

@@ -151,7 +151,7 @@ const Settings = () => {
   };
 
   return (
-    <Layout title="Configuración" showBackButton={true} showSettings={false}>
+    <Layout>
       <div className="space-y-6">
         {/* Nombre */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">

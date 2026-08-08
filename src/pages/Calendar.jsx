@@ -132,7 +132,7 @@ const Calendar = () => {
   const startDay = firstDayOfMonth.getDay();
 
   return (
-    <Layout title={format(currentDate, 'MMMM yyyy', { locale: es })} showBackButton={false}>
+    <Layout>
       <div className="space-y-6">
         {/* Navegación de meses */}
         <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm">

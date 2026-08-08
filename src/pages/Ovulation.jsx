@@ -49,7 +49,7 @@ const Ovulation = () => {
   }
 
   return (
-    <Layout title="Ovulación y Fertilidad" showBackButton={false}>
+    <Layout>
       <div className="space-y-6">
         {/* Estado actual */}
         <div className={`rounded-2xl p-6 shadow-lg ${

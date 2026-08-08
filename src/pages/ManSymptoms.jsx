@@ -214,7 +214,7 @@ const ManSymptoms = () => {
 
   if (loading) {
     return (
-      <Layout title="Cargando..." showBackButton={false} showSettings={false}>
+      <Layout showSettings={false}>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
@@ -227,7 +227,7 @@ const ManSymptoms = () => {
 
   if (error) {
     return (
-      <Layout title="Error" showBackButton={false} showSettings={false}>
+      <Layout showSettings={false}>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <div className="bg-red-50 rounded-full p-4 inline-block mb-4">
@@ -248,7 +248,7 @@ const ManSymptoms = () => {
 
   if (!profile || !partnerData) {
     return (
-      <Layout title="Error" showBackButton={false} showSettings={false}>
+      <Layout showSettings={false}>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <p className="text-gray-600">No se pudieron cargar los datos.</p>
@@ -259,7 +259,7 @@ const ManSymptoms = () => {
   }
 
   return (
-    <Layout title="Síntomas" showBackButton={true} showSettings={false}>
+    <Layout showSettings={false}>
       <div className="space-y-6">
         {/* Selector de fecha */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">

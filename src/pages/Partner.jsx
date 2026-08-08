@@ -152,7 +152,7 @@ const Partner = () => {
   // Vista para hombre - ingresar código de pareja
   if (profile.gender === 'man') {
     return (
-      <Layout title="Sincronizar con Pareja" showBackButton={false}>
+      <Layout>
         <div className="space-y-6">
           {/* Instrucciones */}
           <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl p-6 text-white">
@@ -302,7 +302,7 @@ const Partner = () => {
 
   // Vista para mujer - mostrar su código
   return (
-    <Layout title="Sincronización con Pareja" showBackButton={false}>
+    <Layout>
       <div className="space-y-6">
         {/* Instrucciones */}
         <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-2xl p-6 text-white">

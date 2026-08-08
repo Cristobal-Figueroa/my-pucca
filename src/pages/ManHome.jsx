@@ -131,7 +131,7 @@ const ManHome = () => {
 
   if (loading) {
     return (
-      <Layout title="Cargando..." showBackButton={false} showSettings={false}>
+      <Layout>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
@@ -144,7 +144,7 @@ const ManHome = () => {
 
   if (showPartnerCodeInput) {
     return (
-      <Layout title="Sincronizar Pareja" showBackButton={false} showSettings={false}>
+      <Layout>
         <div className="flex items-center justify-center min-h-64 p-4">
           <div className="max-w-md w-full">
             <div className="bg-white rounded-2xl p-6 shadow-lg">
@@ -206,7 +206,7 @@ const ManHome = () => {
 
   if (error) {
     return (
-      <Layout title="Error" showBackButton={false} showSettings={false}>
+      <Layout>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <div className="bg-red-50 rounded-full p-4 inline-block mb-4">
@@ -227,7 +227,7 @@ const ManHome = () => {
 
   if (!profile || !partnerData) {
     return (
-      <Layout title="Error" showBackButton={false} showSettings={false}>
+      <Layout>
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <p className="text-gray-600">No se pudieron cargar los datos.</p>
@@ -250,7 +250,7 @@ const ManHome = () => {
   const phaseInfo = currentPhase ? getPhaseInfo(currentPhase) : null;
 
   return (
-    <Layout title={`Hola, ${profile.name}`} showBackButton={false} showSettings={true}>
+    <Layout>
       <div className="space-y-6">
         {/* Fase actual */}
         {phaseInfo && (

@@ -627,7 +627,7 @@ const Tips = () => {
   const Icon = currentTips.icon;
 
   return (
-    <Layout title="Consejos" showBackButton={false}>
+    <Layout>
       <div className="space-y-6 pb-20">
         {/* Hero Section */}
         <div className={`${currentTips.bgColor} rounded-3xl p-8 relative overflow-hidden`}>

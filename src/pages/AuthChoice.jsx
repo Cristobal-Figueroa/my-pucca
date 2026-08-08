@@ -15,7 +15,7 @@ const AuthChoice = () => {
   };
 
   return (
-    <Layout title="Bienvenido" showBackButton={true} showSettings={false}>
+    <Layout>
       <div className="space-y-6">
         {/* Título */}
         <div className="text-center">
